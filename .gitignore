@@ -2,3 +2,4 @@ code/mask_rcnn_coco.h5
 code/samples/coco/__pycache__/
 code/mrcnn/__pycache__/
 logbook/
+.DS_Store
