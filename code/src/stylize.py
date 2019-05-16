@@ -354,7 +354,7 @@ def  main(args):
     '''
     print('Iteration %d: loss = %f' % (args.iteration, sess.run(total_loss)))
     result = sess.run(target_net['input'])
-    output_path = os.path.join(args.output_dir, 'result_final_guided.png')
+    output_path = os.path.join(args.output_dir, 'guided_ST_me2_starry-night.png')
     write_image(output_path, result)
 
 
