@@ -3,3 +3,7 @@ code/samples/coco/__pycache__/
 code/mrcnn/__pycache__/
 logbook/
 .DS_Store
+code/.DS_Store
+code/src/.DS_Store
+code/src/imagenet-vgg-verydeep-19.mat
+code/src/__pycache__/
