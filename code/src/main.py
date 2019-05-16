@@ -4,7 +4,7 @@ import random
 import math
 import numpy as np
 import skimage.io
-from skimage import img_as_uint
+from skimage import img_as_uint, color
 
 # Root directory of the project as string
 ROOT_DIR = os.path.abspath("../")
@@ -93,7 +93,7 @@ binary_masks = np.invert(binary_masks)
 n=0
 for i in r["class_ids"]:
     print(class_names[i])
-    skimage.io.imsave(OUTPUT_DIR+str(n)+".png", img_as_uint(binary_masks[:,:,n]))
+    skimage.io.imsave(OUTPUT_DIR+str(n)+".jpg", img_as_uint(color.gray2rgb(binary_masks[:,:,n])))
     n +=1
 
 
