@@ -7,7 +7,9 @@ import skimage.io
 from skimage import img_as_uint, color
 
 # Root directory of the project as string
-ROOT_DIR = os.path.abspath("../")
+ROOT_DIR = os.path.abspath("./")
+
+print("THE ROOT DIRECTORY IS:", ROOT_DIR)
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -32,7 +34,7 @@ COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "images")
 
 # Directory to save script output
-OUTPUT_DIR = os.path.join(ROOT_DIR, "output/")
+OUTPUT_DIR = os.path.join(ROOT_DIR, "static/")
 print(OUTPUT_DIR)
 
 
@@ -50,6 +52,7 @@ model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
 
 # Load weights trained on MS-COCO
 model.load_weights(COCO_MODEL_PATH, by_name=True)
+model.keras_model._make_predict_function()
 
 # COCO Class names
 # Index of the class in the list is its ID. For example, to get ID of
@@ -71,33 +74,37 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                'teddy bear', 'hair drier', 'toothbrush']
 
 # RUN OBJECT DETECTION
-image = skimage.io.imread(os.path.join(IMAGE_DIR, "download.jpg"))
-
-# Run detection
-results = model.detect([image], verbose=1)
-"""Runs the detection pipeline.
-
-images: List of images, potentially of different sizes.
-
-Returns a list of dicts, one dict per image. The dict contains:
-rois: [N, (y1, x1, y2, x2)] detection bounding boxes
-class_ids: [N] int class IDs
-scores: [N] float probability scores for the class IDs
-masks: [H, W, N] instance binary masks
-"""
-
-# Visualize results
-r = results[0]
-#visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
+def create_masks(filename):
 
 
-binary_masks = r["masks"]
-binary_masks = np.invert(binary_masks)
-n=0
-for i in r["class_ids"]:
-    print(class_names[i])
-    skimage.io.imsave(OUTPUT_DIR+str(n)+".jpg", img_as_uint(color.gray2rgb(binary_masks[:,:,n])))
-    n +=1
+    image = skimage.io.imread(os.path.join(IMAGE_DIR, filename))
 
+    # Run detection
+    results = model.detect([image], verbose=1)
 
+    """Runs the detection pipeline.
+
+    images: List of images, potentially of different sizes.
+
+    Returns a list of dicts, one dict per image. The dict contains:
+    rois: [N, (y1, x1, y2, x2)] detection bounding boxes
+    class_ids: [N] int class IDs
+    scores: [N] float probability scores for the class IDs
+    masks: [H, W, N] instance binary masks
+    """
+
+    # Visualize results
+    r = results[0]
+    #visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
+
+    
+    binary_masks = r["masks"]
+    binary_masks = np.invert(binary_masks)
+    n=0
+    for i in r["class_ids"]:
+        print(class_names[i])
+        skimage.io.imsave(OUTPUT_DIR+str(n)+".jpg", img_as_uint(color.gray2rgb(binary_masks[:,:,n])))
+        n +=1
+
+    
 
