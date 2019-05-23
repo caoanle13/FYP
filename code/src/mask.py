@@ -5,11 +5,12 @@ import math
 import numpy as np
 import skimage.io
 from skimage import img_as_uint, color
+import shutil
+from mrcnn import visualize_cv
+import cv2
 
 # Root directory of the project as string
 ROOT_DIR = os.path.abspath("./")
-
-print("THE ROOT DIRECTORY IS:", ROOT_DIR)
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -31,10 +32,17 @@ MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 
 # Directory of images to run detection on
-IMAGE_DIR = os.path.join(ROOT_DIR, "images")
+IMAGE_DIR = os.path.join(ROOT_DIR, "static/images/")
+
+MASK_DIR = os.path.join(ROOT_DIR, "static/masks/")
 
 # Directory to save script output
-OUTPUT_DIR = os.path.join(ROOT_DIR, "static/")
+OUTPUT_DIR = os.path.join(ROOT_DIR, "static/masks/")
+if os.path.isdir(OUTPUT_DIR):
+    shutil.rmtree(OUTPUT_DIR)
+os.mkdir(OUTPUT_DIR)
+
+
 print(OUTPUT_DIR)
 
 
@@ -74,18 +82,12 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                'teddy bear', 'hair drier', 'toothbrush']
 
 # RUN OBJECT DETECTION
-def create_masks(filename):
+def detect_objects(filename):
 
+    """
+    Runs the detection pipeline.
 
-    image = skimage.io.imread(os.path.join(IMAGE_DIR, filename))
-
-    # Run detection
-    results = model.detect([image], verbose=1)
-
-    """Runs the detection pipeline.
-
-    images: List of images, potentially of different sizes.
-
+    - filename: input image to run the search on.
     Returns a list of dicts, one dict per image. The dict contains:
     rois: [N, (y1, x1, y2, x2)] detection bounding boxes
     class_ids: [N] int class IDs
@@ -93,18 +95,51 @@ def create_masks(filename):
     masks: [H, W, N] instance binary masks
     """
 
-    # Visualize results
+    image = skimage.io.imread(os.path.join(IMAGE_DIR, filename))
+
+    # Run detection
+    results = model.detect([image], verbose=1)
     r = results[0]
-    #visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
 
+    output = visualize_cv.display_instances(
+        image,
+        r['rois'],
+        r['masks'],
+        r['class_ids'],
+        class_names,
+        r['scores']
+    )
+
+    # Save image with all instances
+    cv2.imwrite(os.path.join(IMAGE_DIR, filename), output)
+
+    # Save all masks
+    for n, i in zip(r['number'], r['class_ids']):
+        mask = r["masks"][:,:,n]
+        mask = img_as_uint(color.gray2rgb(mask)).astype(dtype="uint8")
+        label = class_names[i]
+        output_name = str(n) + "_" + label + ".jpg"
+        skimage.io.imsave(OUTPUT_DIR+output_name, mask)
+
+
+
+def combine_masks(filenames):
+    """
+    function to combine different binary masks from the same image into one single binary mask
     
-    binary_masks = r["masks"]
-    binary_masks = np.invert(binary_masks)
-    n=0
-    for i in r["class_ids"]:
-        print(class_names[i])
-        skimage.io.imsave(OUTPUT_DIR+str(n)+".jpg", img_as_uint(color.gray2rgb(binary_masks[:,:,n])))
-        n +=1
+    - filenames: list of strings of the binarys masks to combine
+    - output: combined mask
 
+    """
     
+    h = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
+    w = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
+    
+    mask = np.zeros([h,w,3],dtype=np.uint8)
 
+    for filename in filenames:
+
+        temp = skimage.io.imread(os.path.join(MASK_DIR, filename))
+        mask = mask | temp
+    
+    skimage.io.imsave(OUTPUT_DIR+"final_mask.jpg", mask)

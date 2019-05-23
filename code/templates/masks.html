@@ -1,0 +1,36 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<h2>Select masks for guided style transfer</h2>
+<body>
+
+    <script>
+
+        function validateMaskForm() {
+            alert(document.getElementById("mask-form"));
+        }
+        
+    </script>
+    <div>
+        <p>Original Image</p>
+        <img src="/static/images/{{image}}">
+    </div>
+
+    <p>Select the masks you want the style transfer to apply to</p>
+    <form id="mask-form" action="{{ url_for('style')}}" method="POST" enctype="multipart/form-data">
+    {% for mask in masks %}
+    <div>
+        <p>{{mask}}</p>
+        <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
+        <label for="{{mask}}"><img src="static/masks/{{mask}}" height="200" /></label>
+    </div>
+    {% endfor %}
+    <input type="submit" value="Style Transfer">
+    </form>
+
+</body>
+</html>

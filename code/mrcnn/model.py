@@ -2534,6 +2534,7 @@ class MaskRCNN():
                 "class_ids": final_class_ids,
                 "scores": final_scores,
                 "masks": final_masks,
+                "number": range(len(final_scores))
             })
         return results
 

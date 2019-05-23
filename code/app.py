@@ -1,33 +1,51 @@
 from flask import Flask, render_template, request
 import os
 import shutil
-from src.mask import create_masks
+from src.mask import detect_objects, combine_masks
+from src.style_transfer import transfer_style
 
 app = Flask(__name__)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+IMAGE_PATH = os.path.join(APP_ROOT, "static/images/")
+MASK_PATH = os.path.join(APP_ROOT, "static/masks/")
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
-@app.route("/upload", methods=["POST"])
-def upload():
-    IMAGE_PATH = os.path.join(APP_ROOT, "images/")
+@app.route("/masks", methods=["POST"])
+def masks():
 
     if os.path.isdir(IMAGE_PATH):
         shutil.rmtree(IMAGE_PATH)
     os.mkdir(IMAGE_PATH)
-    #CONTENT_PATH = os.path.join(IMAGE_PATH, "content")
-    #STYLE_PATH = os.path.join(IMAGE_PATH, "style")
-    #os.mkdir(CONTENT_PATH)
-    #os.mkdir(STYLE_PATH)
+
+    if os.path.isdir(MASK_PATH):
+        shutil.rmtree(MASK_PATH)
+    os.mkdir(MASK_PATH)
     
     content_image = request.files.getlist("content_image")[0] #<class 'werkzeug.datastructures.FileStorage'>    
-    content_image.save("/".join([IMAGE_PATH, content_image.filename]))
-    print("FILE NAME IS", content_image.filename)
-    create_masks(content_image.filename)
-    return render_template("complete.html", image_name=content_image.filename)
+    content_image.save("/".join([IMAGE_PATH, "content_image.jpg"]))
+    detect_objects("content_image.jpg")
+
+    mask_files = [file for file in os.listdir('static/masks/') if not file.startswith(".")]
+
+    return render_template("masks.html", image="content_image.jpg", masks=mask_files)
+
+
+@app.route("/style", methods=["POST"])
+def style():
+    form = request.form.to_dict(flat=False)
+    selected = list(form)
+    combine_masks(selected)
+
+    transfer_style("content_image.jpg", "final_mask.jpg", "style_image.jpg")
+
+    return render_template("style.html", image="output.png")
+
+
+
     
 if __name__ == "__main__":
-    app.run(host="localhost", port=8000)
+    app.run(host="localhost", port=8000, debug=True)

@@ -7,9 +7,9 @@
 </head>
 <body>
     <h1>Style Transfer App</h1>
-    <form id="upload-form" action="{{ url_for('upload')}}" method="POST" enctype="multipart/form-data">
+    <form id="image-form" action="{{ url_for('masks')}}" method="POST" enctype="multipart/form-data">
         <input type="file" name="content_image" accept="image/*">
-        <input type="submit" value="Upload Images">
+        <input type="submit" value="Start Processing">
     </form>
 </body>
 </html>
