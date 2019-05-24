@@ -223,7 +223,7 @@ def  transfer_style(content, mask, style):
     '''  
     # read images and preprocess
     content_img = read_image("static/images/"+content, hard_width=False)
-    style_img = read_image("static/style/"+style, hard_width=False)
+    style_img = read_image("static/images/"+style, hard_width=False)
 
     
     # single mask
