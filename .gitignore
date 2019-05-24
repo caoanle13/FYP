@@ -8,3 +8,4 @@ code/src/.DS_Store
 code/src/imagenet-vgg-verydeep-19.mat
 code/src/__pycache__/
 app/mask_rcnn_coco.h5
+code/static/
