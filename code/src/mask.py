@@ -111,7 +111,7 @@ def detect_objects(filename):
     )
 
     # Save image with all instances
-    cv2.imwrite(os.path.join(IMAGE_DIR, filename), output)
+    cv2.imwrite(os.path.join(IMAGE_DIR, "maskrcnn.jpg"), output)
 
     # Save all masks
     for n, i in zip(r['number'], r['class_ids']):

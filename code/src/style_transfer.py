@@ -222,15 +222,15 @@ def  transfer_style(content, mask, style):
     init 
     '''  
     # read images and preprocess
-    content_img = read_image("static/images/"+content, 256)
-    style_img = read_image("static/style/"+style, 256)
+    content_img = read_image("static/images/"+content, hard_width=False)
+    style_img = read_image("static/style/"+style, hard_width=False)
 
     
     # single mask
     if mask is None:
         target_masks_origin = np.ones(content_img.shape[0:3]).astype(np.float32)
     else:
-        target_masks_origin = read_single_mask("static/masks/"+mask, 256)
+        target_masks_origin = read_single_mask("static/masks/"+mask, hard_width=False)
     
     style_masks_origin = np.ones(style_img.shape[0:3]).astype(np.float32)
     
@@ -303,6 +303,6 @@ def  transfer_style(content, mask, style):
     '''
     print('Iteration %d: loss = %f' % (1000, sess.run(total_loss)))
     result = sess.run(target_net['input'])
-    output_path = os.path.join('../static/output', 'output.png')
+    output_path = os.path.join('./static/output', 'output.png')
     write_image(output_path, result)
 

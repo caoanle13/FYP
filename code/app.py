@@ -31,7 +31,7 @@ def masks():
 
     mask_files = [file for file in os.listdir('static/masks/') if not file.startswith(".")]
 
-    return render_template("masks.html", image="content_image.jpg", masks=mask_files)
+    return render_template("masks.html", image="maskrcnn.jpg", masks=mask_files)
 
 
 @app.route("/style", methods=["POST"])
@@ -48,4 +48,4 @@ def style():
 
     
 if __name__ == "__main__":
-    app.run(host="localhost", port=8000, debug=True)
+    app.run(host="localhost", port=8000, debug=False)
