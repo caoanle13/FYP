@@ -25,8 +25,12 @@ def masks():
         shutil.rmtree(MASK_PATH)
     os.mkdir(MASK_PATH)
     
-    content_image = request.files.getlist("content_image")[0] #<class 'werkzeug.datastructures.FileStorage'>    
+    content_image = request.files.getlist("content_image")[0]
     content_image.save("/".join([IMAGE_PATH, "content_image.jpg"]))
+
+    style_image = request.files.getlist("style_image")[0]    
+    style_image.save("/".join([IMAGE_PATH, "style_image.jpg"]))
+
     detect_objects("content_image.jpg")
 
     mask_files = [file for file in os.listdir('static/masks/') if not file.startswith(".")]
