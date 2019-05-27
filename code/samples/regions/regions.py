@@ -142,7 +142,10 @@ class RegionsDataset(utils.Dataset):
                         dtype=np.uint8)
         for i, p in enumerate(info["polygons"]):
             # Get indexes of pixels inside the polygon and set them to 1
-            rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
+            corrected_y = [y in p['all_points_y'] if y < info('height') else info('height')]
+            corrected_x = [x in p['all_points_x'] if y < info('width') else info('width')]
+            #rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
+            rr, cc = skimage.draw.polygon(corrected_y, corrected_x)
             mask[rr, cc, i] = 1
 
         # Return mask, and array of class IDs of each instance. Since we have
