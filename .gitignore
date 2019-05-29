@@ -9,3 +9,11 @@ code/src/imagenet-vgg-verydeep-19.mat
 code/src/__pycache__/
 app/mask_rcnn_coco.h5
 code/static/
+venv/
+.vscode/
+code/semantic_segmentation/pspnet/
+code/semantic_segmentation/__pycache__
+code/semantic_segmentation/libs/__pycache__
+code/semantic_segmentation/.DS_Store
+code/semantic_segmentation/.ipynb_checkpoints/
+code/samples/.DS_Store

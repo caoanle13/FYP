@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request
 import os
 import shutil
-from src.mask import detect_objects, combine_masks
+#from src.mask import detect_objects, combine_masks
+from semantic_segmentation.segmentation import SegmentationModel
 from src.style_transfer import transfer_style
 
 app = Flask(__name__)
@@ -9,6 +10,8 @@ app = Flask(__name__)
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGE_PATH = os.path.join(APP_ROOT, "static/images/")
 MASK_PATH = os.path.join(APP_ROOT, "static/masks/")
+
+seg_model = SegmentationModel()
 
 @app.route('/')
 def index():
@@ -31,11 +34,14 @@ def masks():
     style_image = request.files.getlist("style_image")[0]    
     style_image.save("/".join([IMAGE_PATH, "style_image.jpg"]))
 
-    detect_objects("content_image.jpg")
+    #detect_objects("content_image.jpg")
+    seg_model.infer("static/images/content_image.jpg")
 
-    mask_files = [file for file in os.listdir('static/masks/') if not file.startswith(".")]
+    return "hi"
 
-    return render_template("masks.html", image="maskrcnn.jpg", masks=mask_files)
+    #mask_files = [file for file in os.listdir('static/masks/') if not file.startswith(".")]
+
+    #return render_template("masks.html", image="maskrcnn.jpg", masks=mask_files)
 
 
 @app.route("/style", methods=["POST"])
