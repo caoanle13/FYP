@@ -26,3 +26,4 @@ tensorflow-gpu
 tensorflow-estimator==1.13.0
 termcolor==1.1.0
 Werkzeug==0.15.4
+imageio==2.5.0

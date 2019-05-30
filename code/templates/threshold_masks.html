@@ -1,0 +1,33 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<h2>Select masks for guided style transfer</h2>
+<body>
+
+    
+    <div>
+        <p>Original Content Image</p>
+        <img src="/static/images/content_image.jpg">
+        <p>Output of segmentation</p>
+        <img src="/static/masks/content/threshold_mask.jpg">
+    </div>
+
+    <div>
+        <p>Original Style Image</p>
+        <img src="/static/images/style_image.jpg">
+        <p>Output of segmentation</p>
+        <img src="/static/masks/style/threshold_mask.jpg">
+    </div>
+
+    <p>White regions of the style image will be transfered to white regions of the content image and same for black regions.</p>
+
+    <form id="threshold-form" action="{{ url_for('treshold_transfer')}}" method="POST" enctype="multipart/form-data">
+        <input type="submit" value="Style Transfer">
+    </form>
+
+</body>
+</html>

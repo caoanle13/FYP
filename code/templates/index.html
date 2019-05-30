@@ -1,18 +1,29 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Style Transfer App</title>
 </head>
+
 <body>
     <h1>Style Transfer App</h1>
-    <form id="image-form" action="{{ url_for('masks')}}" method="POST" enctype="multipart/form-data">
+    <form id="image-form" action="{{ url_for('masks')}}" method="POST" enctype="multipart/form-data" onsubmit="return validate(this);">
         <p>Insert content image</p>
         <input type="file" name="content_image" accept="image/*">
         <p>Insert style image</p>
         <input type="file" name="style_image" accept="image/*">
+        <select name="transfer-option">
+            <option value="full">Full Style Transfer</option>
+            <option value="semantic">Semantic Style Transfer</option>
+            <option value="custom" selected="selected">Custom Style Transfer</option>
+            <option value="threshold">Threshold Style Transfer</option>
+          </select>
         <input type="submit" value="Start Processing">
     </form>
 </body>
+
+<script src="../static/js/index.js"></script>
+
 </html>

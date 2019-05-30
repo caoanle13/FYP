@@ -8,19 +8,25 @@
 <h2>Select masks for guided style transfer</h2>
 <body>
 
-
+    
     <div>
         <p>Original Image</p>
-        <img src="/static/images/{{image}}">
+        <img src="/static/images/content_image.jpg">
+        <p>Output of segmentation</p>
+        <img src="/static/masks/content/segmentation_mask.jpg">
+        <p>Overlay</p>
+        <img src="/static/masks/content/superimposed_image.jpg">
     </div>
 
-    <p>Select the masks you want the style transfer to apply to</p>
+    <p>Select the masks you want the style transfer to apply to:</p>
+    <p>{{masks|length}} regions were found</p>
     <form id="mask-form" action="{{ url_for('style')}}" method="POST" enctype="multipart/form-data">
     {% for mask in masks %}
+    {% set region = mask.split('_')[1].split('.')[0] %}
     <div>
-        <p>{{mask}}</p>
+        <p>{{region}}</p>
         <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
-        <label for="{{mask}}"><img src="static/masks/{{mask}}" height="200" /></label>
+        <label for="{{mask}}"><img src="static/masks/content/{{mask}}" height="200" /></label>
     </div>
     {% endfor %}
     <input type="submit" value="Style Transfer">

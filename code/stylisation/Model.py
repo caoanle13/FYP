@@ -19,8 +19,17 @@ vgg_layers = (
 
 
 def prepare_model(path):
+    """ Loads network and get the weights.
+    
+    Arguments:
+        - path {str}: Path to the network.
+    
+    Returns:
+        {unknown}: The network weights.
+    """
     vgg_rawnet = scipy.io.loadmat(path)
     return vgg_rawnet['layers'][0] # another solution: global vgg_weights
+
 
 def build_image_net(input_tensor, vgg_weights, feature_pooling_type):
     net = {}
@@ -40,15 +49,18 @@ def build_image_net(input_tensor, vgg_weights, feature_pooling_type):
 
     return net
 
+
 def conv_layer(input, W, b):
     conv =  tf.nn.conv2d(input, W, strides=[1,1,1,1], padding='SAME')
     return conv + b
+
 
 def pool_layer(input, feature_pooling_type):
     if feature_pooling_type == 'avg':
         return tf.nn.avg_pool(input, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
     elif feature_pooling_type == 'max':
         return tf.nn.max_pool(input, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+
 
 def build_mask_net(input_tensor, mask_downsample_type):
     net = {}

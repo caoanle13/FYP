@@ -1,19 +1,21 @@
-import os
-import sys
+""" Helper functions for the Style Transfer Model """
+
+
+import scipy.misc
+import imageio
 import tensorflow as tf
 import numpy as np
-import scipy.misc
 from sklearn.cluster import KMeans
-
-from src import Model
-from src import Parser
+from stylisation import Model
 
 
-'''
-    read & write & init
-'''
 def read_image(path, hard_width):   # read and preprocess
-    img = scipy.misc.imread(path)      
+    """ Reads and preprocess single image.
+    
+    Returns:
+        {nd array} -- the preprocessed image as a numpy array.
+    """
+    img = imageio.imread(path)      
     if hard_width:
         img = scipy.misc.imresize(img, float(hard_width) / img.shape[1])
     img = img.astype(np.float32)
@@ -21,8 +23,19 @@ def read_image(path, hard_width):   # read and preprocess
     img = img - [123.68, 116.779, 103.939]
     return img
 
+
+
 def read_single_mask(path, hard_width): 
-    rawmask = scipy.misc.imread(path)
+    """ Reads a single spatial mask.
+    
+    Arguments:
+        path {str}: Path to the mask.
+        hard_width {int}: Size limit.
+    
+    Returns:
+        {np stack}: stacked mask.
+    """         
+    rawmask = imageio.imread(path)
     if hard_width:
         rawmask = scipy.misc.imresize(rawmask, float(hard_width) / rawmask.shape[1], interp='nearest')    
     rawmask = rawmask / 255 # integer division, only pure white pixels become 1
@@ -30,35 +43,56 @@ def read_single_mask(path, hard_width):
     single = (rawmask.transpose([2, 0, 1]))[0]
     return np.stack([single])
 
+
+
 # colorful, run K-Means to get rid of possible intermediate colors
 def read_colorful_mask(target_path, style_path, hard_width, n_colors):
+    """ Reads a colorful mask (n_mask_color > 2) and runs K-Means to get rid of possible intermediate colors.
+    
+    Arguments:
+        - target_path {str}: Path to content mask.
+        - style_path {str}: Path to style mask.
+        - hard_width {int}: Size limit.
+        - n_colors {int}: Number of colors in the colorful mask.
+    
+    Raises:
+        - AttributeError: when this function is called with empty mask.
+    
+    Returns:
+        {np stack}: stacked masks.
+    """
+
+    # Verify that content and style masks exist
     if target_path is None or style_path is None:
         raise AttributeError("mask path can't be empty when n_colors > 1 ")
 
-    target_mask = scipy.misc.imread(target_path)
-    style_mask = scipy.misc.imread(style_path)
+    # Read the masks
+    target_mask = imageio.imread(target_path)
+    style_mask = imageio.imread(style_path)
+
+    # Adjust size if necessary
     if hard_width: # use 'nearest' to avoid more intermediate colors
         target_mask = scipy.misc.imresize(target_mask, float(hard_width) / target_mask.shape[1], 
             interp='nearest') 
         style_mask = scipy.misc.imresize(style_mask, float(hard_width) / style_mask.shape[1], 
             interp='nearest')
     
-    # flatten
+    # Flatten masks
     target_shape = target_mask.shape[0:2]
     target_mask = target_mask.reshape([target_shape[0]*target_shape[1], -1])
     style_shape = style_mask.shape[0:2]
     style_mask = style_mask.reshape([style_shape[0]*style_shape[1], -1])
 
-    # cluster
+    # Compute KMeans clustering on the style mask with n_colors as the number of clusters.
     kmeans = KMeans(n_clusters=n_colors, random_state=0).fit(style_mask)
 
-    # predict
+    # Predict labels
     target_labels = kmeans.predict(target_mask.astype(np.float32))
     target_labels = target_labels.reshape([target_shape[0], target_shape[1]])
     style_labels = kmeans.predict(style_mask.astype(np.float32))
     style_labels = style_labels.reshape([style_shape[0], style_shape[1]])
 
-    # stack
+    # Create lists of masks (1 per color) and stack them
     target_masks = []
     style_masks = []
     for i in range(n_colors):
@@ -66,24 +100,51 @@ def read_colorful_mask(target_path, style_path, hard_width, n_colors):
         style_masks.append( (style_labels == i).astype(np.float32) )
     return np.stack(target_masks), np.stack(style_masks)
 
+
+
+
+
 def write_image(path, img):   # postprocess and write
     img = img + [123.68, 116.779, 103.939]
     img = img[0]
     img = np.clip(img, 0, 255).astype('uint8')
     scipy.misc.imsave(path, img)
 
+
+
 def get_init_image(content_img, init_noise_ratio):
-    # why [-20, 20]???
+    """ Produces the initial image which is a linear combination between the content image and noise.
+    
+    Arguments:
+        - content_img {nd array}: Content image as a numpy array.
+        - init_noise_ratio {float}: Strength of noise.
+    
+    Returns:
+        {nd array}: A linear combination between the content image and nosie.
+    """
     noise_img = np.random.uniform(-20., 20., content_img.shape).astype(np.float32)
     init_img = init_noise_ratio * noise_img + (1. - init_noise_ratio) * content_img
     return init_img
+
 
 
 '''
     compute features & masks 
     build net
 '''
+
 def compute_features(vgg_weights, pooling_type, input_img, layers):
+    """ Computes the features of an image at specific layers of the network.
+    
+    Arguments:
+        - vgg_weights {unknown}: Weights of the network.
+        - pooling_type {str}: Can be either 'avg' or 'max' (default: 'avg')
+        - input_img {nd array}: Input image.
+        - layers {list(str)}: List containing the layers to consider.
+    
+    Returns:   
+        {dict}: Features at each of the layers.
+    """
     input = tf.placeholder(tf.float32, shape=input_img.shape)
     net = Model.build_image_net(input, vgg_weights, pooling_type)
     features = {}
@@ -91,6 +152,8 @@ def compute_features(vgg_weights, pooling_type, input_img, layers):
         for layer in layers:
             features[layer] = sess.run(net[layer], feed_dict={input: input_img})
     return features
+
+
 
 def compute_layer_masks(masks, layers, ds_type):
     masks_tf = masks.transpose([1,2,0]) # [numberOfMasks, h, w] -> [h, w, masks]
@@ -105,6 +168,8 @@ def compute_layer_masks(masks, layers, ds_type):
             layer_masks[layer] = out[0].transpose([2,0,1])
     return layer_masks
 
+
+
 def build_target_net(vgg_weights, pooling_type, target_shape):
     input = tf.Variable( np.zeros(target_shape).astype('float32') )
     net = Model.build_image_net(input, vgg_weights, pooling_type)
@@ -115,6 +180,7 @@ def build_target_net(vgg_weights, pooling_type, target_shape):
 '''
     loss
 '''
+
 def content_layer_loss(p, x, loss_norm):
     _, h, w, d = p.shape
     M = h * w
@@ -124,7 +190,9 @@ def content_layer_loss(p, x, loss_norm):
     elif loss_norm == 2:
         K = 1. / (2. * N**0.5 * M**0.5)
     loss = K * tf.reduce_sum( tf.pow((x - p), 2) )
-    return loss    
+    return loss 
+
+
 
 def sum_content_loss(target_net, content_features, layers, layers_weights, loss_norm):
     content_loss = 0.
@@ -134,6 +202,8 @@ def sum_content_loss(target_net, content_features, layers, layers_weights, loss_
         content_loss += content_layer_loss(p, x, loss_norm) * weight
     content_loss /= float(sum(layers_weights))
     return content_loss
+
+
 
 def masked_gram(x, mx, mask_norm, N):
     R = mx.shape[0]
@@ -155,6 +225,8 @@ def masked_gram(x, mx, mask_norm, N):
         masked_gram.append(gram)
     return tf.stack(masked_gram)
 
+
+
 def masked_style_layer_loss(a, ma, x, mx, mask_norm):
     N = a.shape[3]
     R = ma.shape[0]
@@ -163,6 +235,8 @@ def masked_style_layer_loss(a, ma, x, mx, mask_norm):
     G = masked_gram(x, mx, mask_norm, N)
     loss = K * tf.reduce_sum( tf.pow((G - A), 2) )
     return loss
+
+
 
 def sum_masked_style_loss(target_net, style_features, target_masks, style_masks, layers, layers_weights, mask_norm):
     style_loss = 0.
@@ -175,6 +249,8 @@ def sum_masked_style_loss(target_net, style_features, target_masks, style_masks,
     style_loss /= float(sum(layers_weights))
     return style_loss
 
+
+
 def gram_matrix(x): 
     _, h, w, d = x.get_shape() # x is a tensor
     M = h.value * w.value
@@ -183,12 +259,16 @@ def gram_matrix(x):
     G = tf.matmul(tf.transpose(F), F)
     return (1./M) * G
 
+
+
 def style_layer_loss(a, x):
     N = a.shape[3]
     A = gram_matrix(tf.convert_to_tensor(a))
     G = gram_matrix(x)
     loss = (1./(4 * N**2 )) * tf.reduce_sum(tf.pow((G - A), 2))
     return loss
+
+
 
 def sum_style_loss(target_net, style_features, layers, layers_weights): # for testing  
     style_loss = 0.
@@ -197,7 +277,9 @@ def sum_style_loss(target_net, style_features, layers, layers_weights): # for te
         x = target_net[layer]
         style_loss += style_layer_loss(a, x) * weight
     style_loss /= float(sum(layers_weights))
-    return style_loss    
+    return style_loss  
+
+
 
 def sum_total_variation_loss(input, shape):
     b, h, w, d = shape
@@ -211,98 +293,3 @@ def sum_total_variation_loss(input, shape):
     loss = 2 * (loss_y + loss_x)
     loss = tf.cast(loss, tf.float32) # ?
     return loss
-
-
-'''
-    main
-'''
-def  transfer_style(content, mask, style):
-
-    '''
-    init 
-    '''  
-    # read images and preprocess
-    content_img = read_image("static/images/"+content, hard_width=False)
-    style_img = read_image("static/images/"+style, hard_width=False)
-
-    
-    # single mask
-    if mask is None:
-        target_masks_origin = np.ones(content_img.shape[0:3]).astype(np.float32)
-    else:
-        target_masks_origin = read_single_mask("static/masks/"+mask, hard_width=False)
-    
-    style_masks_origin = np.ones(style_img.shape[0:3]).astype(np.float32)
-    
-    # init img & target shape
-    target_shape = content_img.shape
-    init_img = get_init_image(content_img, 0.0)
-
-
-    # check shape & number of masks
-    if content_img.shape[1:3] != target_masks_origin.shape[1:3]:
-        print('content and mask have different shape')
-        sys.exit(0)
-
-    '''
-    compute features & build net
-    '''
-    # prepare model weights
-    vgg_weights = Model.prepare_model('src/imagenet-vgg-verydeep-19.mat')
-
-    # feature maps of specific layers
-    content_features = compute_features(vgg_weights, 'avg', content_img, ['relu4_2'])   
-    style_features = compute_features(vgg_weights, 'avg', style_img, ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1'])
-
-    # masks of specific layers
-    target_masks = compute_layer_masks(target_masks_origin, ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1'], 
-        'simple')
-    style_masks = compute_layer_masks(style_masks_origin, ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1'], 
-        'simple')
-
-    # build net
-    target_net = build_target_net(vgg_weights, 'avg', target_shape)
-
-
-    '''
-    loss 
-    '''
-    content_loss = sum_content_loss(target_net, content_features, ['relu4_2'], [1.], 1)
-   
-    style_masked_loss = sum_masked_style_loss(target_net, style_features, 
-                                              target_masks, style_masks, 
-                                              ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1'],
-                                              [1., 1., 1., 1., 1.], 
-                                              'square_sum')
-
-    total_loss = 1 * content_loss + 0.2 * style_masked_loss
-
-
-    '''
-    train 
-    '''
-    
-    if not os.path.exists('./static/output'):
-        os.mkdir('./static/output')
-
-    optimizer = tf.contrib.opt.ScipyOptimizerInterface(
-        total_loss, method='L-BFGS-B',
-        options={'maxiter': 1000,
-                    'disp': 10})   
-    # init  
-    init_op = tf.global_variables_initializer()
-    sess = tf.Session()
-    sess.run(init_op)
-    sess.run( target_net['input'].assign(init_img) )
-    # train
-    optimizer.minimize(sess)    
-
-
-    '''
-    out
-    '''
-    print('Iteration %d: loss = %f' % (1000, sess.run(total_loss)))
-    result = sess.run(target_net['input'])
-    output_path = os.path.join('./static/output', 'output.png')
-    write_image(output_path, result)
-

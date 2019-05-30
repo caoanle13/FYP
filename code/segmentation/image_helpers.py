@@ -2,8 +2,10 @@
     Module for useful image helper functions such as conversions.
 """
 
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
+from paths import *
+import os
 
 
 
@@ -38,7 +40,7 @@ def boolean_to_pil(data):
 
 
 def superimpose(background, overlay):
-    """ Helper function to merge two images together
+    """ Helper function to merge two images together.
     
     Arguments:
         background {PIL Image}: first image.
@@ -52,15 +54,28 @@ def superimpose(background, overlay):
     return merged_image
 
 
-
-def combine_masks(filenames):
-    """
-    function to combine different binary masks from the same image into one single binary mask
+def equalize(image):
+    """ Helper function to perform histogram equalization.
     
-    - filenames: list of strings of the binarys masks to combine
-    - output: combined mask
-
+    Arguments:
+        - image {PIL Image}: Input image to be equalized.
+    Returns:
+        {PIL Image}: Output equalized image.
     """
+    equalized_image = ImageOps.equalize(image)
+    return equalized_image
+
+
+
+
+def combine_masks(filenames, target):
+    """Function to combine different binary masks from the same image into one single binary mask
+    
+    Arguments:
+        - filenames {list}: list of filenames
+    """
+   
+    MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
     
     h = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
     w = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
@@ -69,7 +84,8 @@ def combine_masks(filenames):
 
     for filename in filenames:
 
-        temp = skimage.io.imread(os.path.join(MASK_DIR, filename))
+        temp = skimage.io.imread(os.path.join(CONTENT_MASK_PATH, filename))
         mask = mask | temp
     
-    skimage.io.imsave(OUTPUT_DIR+"final_mask.jpg", mask)
+    SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
+    skimage.io.imsave(SAVE_PATH, mask)

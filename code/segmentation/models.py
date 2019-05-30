@@ -1,43 +1,44 @@
 import os
 import sys
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import tensorflow as tf
 from shutil import rmtree
+from paths import *
+
+sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
 # Dict containing train ID to RGB colour mappings
-from semantic_segmentation.libs.constants import CITYSCAPES_LABEL_COLORS, CITYSCAPES_LABEL_NAMES
-from semantic_segmentation.image_helpers import array_to_pil, boolean_to_pil, superimpose
-
-# Root directory of the project as string
-ROOT_DIR = os.path.abspath("./")
+from libs.constants import CITYSCAPES_LABEL_COLORS, CITYSCAPES_LABEL_NAMES
+from image_helpers import array_to_pil, boolean_to_pil, superimpose, equalize
 
 
 
-class SegmentationModel():
 
-    def __init__(self):
-        """ 
-        Class to for a Segmentation model trained on the Cityscapes dataset and using the PSPNET network.
-        """
+
+class SemanticModel():
+    """ 
+        Class for a Semantic Segmentation Model trained on the Cityscapes dataset and using the PSPNET network.
+    """
+
+    def __init__(self, target):
 
         print("Initialising the segmentation model...")
         # Root Directory of the model we downloaded
         self.MODEL_NAME = 'pspnet'
 
         # Full path to frozen graph for the model.
-        self.PATH_TO_FROZEN_GRAPH = os.path.join(ROOT_DIR, "semantic_segmentation/{}/frozen_inference_graph_opt.pb".format(self.MODEL_NAME))
-        self.OUTPUT_DIR = os.path.join(ROOT_DIR, "static/masks")
-
-        print(self.OUTPUT_DIR)
-
-        # We are using a model trained on Cityscapes
-        # so the output is 19 classes
+        self.PATH_TO_FROZEN_GRAPH = os.path.join(APP_ROOT, "segmentation/{}/frozen_inference_graph_opt.pb".format(self.MODEL_NAME))
+        
+        # We are using a model trained on Cityscapes (19 classes)
         self.NUM_CLASSES = 19
 
         # Input and output dimensions
         self.INPUT_SIZE = (2048, 1024)
         self.OUTPUT_SIZE=(1025,2049,3)
+
+        self.SAVE_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+
 
         print("Loading a frozen Tensorflow model into memory...")
 
@@ -49,7 +50,7 @@ class SegmentationModel():
                 segmentaion_graph_def.ParseFromString(serialized_graph)
                 tf.import_graph_def(segmentaion_graph_def, name='')
 
-        print("Segmentation model is ready!")
+        print("Semantic segmentation model is ready!")
 
 
 
@@ -128,17 +129,14 @@ class SegmentationModel():
 
 
 
-    def infer(self, path):
+    def segment(self, path):
         """ Function to perform semantic segmentation.
-        It produces an RGB mask, and individual binary masks for each class
+        It saves an RGB mask, and individual binary masks for each class
         
         Arguments:
             - path {str}: Path to the input image to run the inference on.
+            - target {int}: 0 for content image, 1 for style image.
         """
-
-        if os.path.isdir(self.OUTPUT_DIR):
-            rmtree(self.OUTPUT_DIR)
-        os.makedirs(self.OUTPUT_DIR)
 
         # Read input image
         image = Image.open(path)
@@ -152,7 +150,7 @@ class SegmentationModel():
         # Produce colored mask and save it
         rgb_segmentation_mask = self.decode_train_ids(segmentation_mask) #actual colored image
         rgb_segmentation_mask = array_to_pil(rgb_segmentation_mask).resize(input_size)
-        rgb_segmentation_mask.save(self.OUTPUT_DIR + "/segmentation_mask.jpg")
+        rgb_segmentation_mask.save(self.SAVE_DIR +  "segmentation_mask.jpg")
         
         # Produce individual masks for each label
         masks = self.produce_masks(segmentation_mask)
@@ -163,17 +161,52 @@ class SegmentationModel():
             if np.sum(mask) * 10 > mask.size: # Making sure the region covers at least a 10th of the image area
                 mask = boolean_to_pil(mask)
                 mask = mask.resize(input_size)
-                mask.save(self.OUTPUT_DIR + "/mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
+                mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
 
         # Superimpose the image and its mask
         superimposed_image = superimpose(image, rgb_segmentation_mask)
-        superimposed_image.save(self.OUTPUT_DIR + "/superimposed_image.jpg")
+        superimposed_image.save(self.SAVE_DIR + "superimposed_image.jpg")
     
 
     
 
 
-if __name__ == "__main__":
-    model = SegmentationModel()
-    model.infer("house.jpg")
 
+class ThresholdModel():
+    """ 
+        Class for a Threshold Segmentation model.
+    """
+
+    def __init__(self, target, threshold=None):
+        self.threshold = threshold
+        self.SAVE_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+
+
+
+    def segment(self, path):
+        """ Function to perform threshold segmentation.
+        It saves a binary mask, where black pixels areas with intensity lower than the threshold.
+        
+        Arguments:
+            - path {str}: Path to the input image to be thresholded.
+            - target {int}: 0 for content image, 1 for style image.
+        """
+
+        image = Image.open(path)
+
+        # If no threshold was provided, equalize the histogram and set it to 128
+        if self.threshold is None:
+            image = equalize(image)
+            self.threshold = 128
+
+        # Convert to gray scale numpy array
+        gray_image_np = np.array(image.convert(mode="L"))
+
+        # Apply threshold
+        binary_mask = gray_image_np > self.threshold
+
+        # Convert back to PIL Image
+        output_image = boolean_to_pil(binary_mask)
+
+        # Save output
+        output_image.save(self.SAVE_DIR + "threshold_mask.jpg")
