@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 import os
 import shutil
 from segmentation.models import SemanticModel, ThresholdModel
-#from src.style_transfer import transfer_style
+from segmentation.image_helpers import combine_masks
 from paths import *
 from clean import cleanup
 from stylisation.style_transfer_model import TransferModel
@@ -47,8 +47,14 @@ def masks():
 @app.route("/semantic_transfer", methods=["POST"])
 def style():
     form = request.form.to_dict(flat=False)
-    selected = list(form)
-    combine_masks(selected)
+    selected_masks = list(form)
+    combine_masks(selected_masks)
+
+    c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
+    s_mask = None
+    model = TransferModel(2, False, c_mask, s_mask)
+    model.apply_transfer()
+    return render_template("output.html", image="output.jpg")
 
     transfer_style("content_image.jpg", "final_mask.jpg", "style_image.jpg")
 
@@ -63,6 +69,8 @@ def treshold_transfer():
     model = TransferModel(2, False, c_mask, s_mask)
     model.apply_transfer()
     return render_template("output.html", image="output.jpg")
+
+@app.route("/")
 
 
 
