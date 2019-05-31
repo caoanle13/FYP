@@ -8,9 +8,7 @@ from stylisation import Model
 from stylisation import Parser
 from stylisation.helpers import *
 from paths import *
-
-
-args = Parser.parse_args()
+import args
 
 
 class TransferModel():
@@ -208,21 +206,3 @@ class TransferModel():
 
         print('Saving the style transfer output')
         self.save_result()
-        
-
-
-
-
-
-       
-
-
-
-if __name__ == '__main__':   
-    args = Parser.parse_args()
-    transfer(args)
-
-
-
-
-
