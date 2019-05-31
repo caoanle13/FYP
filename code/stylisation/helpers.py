@@ -108,7 +108,7 @@ def write_image(path, img):   # postprocess and write
     img = img + [123.68, 116.779, 103.939]
     img = img[0]
     img = np.clip(img, 0, 255).astype('uint8')
-    scipy.misc.imsave(path, img)
+    imageio.imwrite(path, img)
 
 
 
