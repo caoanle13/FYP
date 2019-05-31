@@ -35,7 +35,7 @@ def boolean_to_pil(data):
     """
     size = data.shape[::-1]
     databytes = np.packbits(data, axis=1)
-    image = Image.frombytes(mode='1', size=size, data=databytes)
+    image = Image.frombytes(mode='RGB', size=size, data=databytes)
     return image
 
 
@@ -82,7 +82,7 @@ def combine_masks(filenames, target):
     h = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
     w = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
     
-    mask = np.zeros([h,w],dtype=np.uint8)
+    mask = np.zeros([h,w,3],dtype=np.uint8)
 
     for filename in filenames:
 
