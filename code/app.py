@@ -57,7 +57,7 @@ def full_transfer():
 def semantic_transfer():
     form = request.form.to_dict(flat=False)
     selected_masks = list(form)
-    combine_masks(selected_masks)
+    combine_masks(selected_masks, target=0)
 
     c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
     s_mask = None

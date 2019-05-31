@@ -69,10 +69,11 @@ def equalize(image):
 
 
 def combine_masks(filenames, target):
-    """Function to combine different binary masks from the same image into one single binary mask
+    """Function to combine different binary masks from the same image into one single binary mask.
     
     Arguments:
-        - filenames {list}: list of filenames
+        - filenames {list}: list of filenames.
+        - target {int}: 0 for content, 1 for style.
     """
    
     MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
