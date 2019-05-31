@@ -35,7 +35,8 @@ def boolean_to_pil(data):
     """
     size = data.shape[::-1]
     databytes = np.packbits(data, axis=1)
-    image = Image.frombytes(mode='RGB', size=size, data=databytes)
+    image = Image.frombytes(mode='1', size=size, data=databytes)
+    image = image.convert(mode='RGB')
     return image
 
 
