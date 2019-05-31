@@ -5,10 +5,9 @@ import numpy as np
 import scipy.misc
 
 from stylisation import Model
-from stylisation import Parser
+from stylisation import args
 from stylisation.helpers import *
 from paths import *
-import args
 
 
 class TransferModel():

@@ -11,7 +11,7 @@ app/mask_rcnn_coco.h5
 code/static/images/
 code/static/masks/
 code/static/output/
-venv/
+fyp_venv/
 .vscode/
 code/segmentation/pspnet/
 code/segmentation/__pycache__
