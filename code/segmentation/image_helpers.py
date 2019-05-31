@@ -6,6 +6,7 @@ from PIL import Image, ImageOps
 import numpy as np
 from paths import *
 import os
+import skimage
 
 
 
