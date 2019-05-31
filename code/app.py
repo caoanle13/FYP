@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import os
 import shutil
 from segmentation.models import SemanticModel, ThresholdModel
@@ -51,7 +51,7 @@ def full_transfer():
     model = TransferModel(1, False, c_mask, s_mask)
     model.apply_transfer()
     return render_template("output.html", image="output.jpg")
-    
+
 
 @app.route("/semantic_transfer", methods=["POST"])
 def semantic_transfer():
