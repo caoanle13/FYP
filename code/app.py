@@ -70,7 +70,6 @@ def treshold_transfer():
     model.apply_transfer()
     return render_template("output.html", image="output.jpg")
 
-@app.route("/")
 
 
 
