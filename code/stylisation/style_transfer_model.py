@@ -142,16 +142,16 @@ class TransferModel():
 
             #init
             init_op = tf.global_variables_initializer() # must! Adam has some varibales to init
-            sess = tf.Session()
-            sess.run(init_op)
-            sess.run( self.target_net['input'].assign(self.init_img) )
+            self.sess = tf.Session()
+            self.sess.run(init_op)
+            self.sess.run( self.target_net['input'].assign(self.init_img) )
 
             #train
             for i in range(args.iteration):
-                sess.run(train_op)
+                self.sess.run(train_op)
                 if i % args.log_iteration == 0:
-                    print('Iteration %d: loss = %f' % (i+1, sess.run(self.total_loss)))
-                    result = sess.run(self.target_net['input'])
+                    print('Iteration %d: loss = %f' % (i+1, self.sess.run(self.total_loss)))
+                    result = self.sess.run(self.target_net['input'])
                     output_path = os.path.join(OUTPUT_PATH, 'result_%s.png' % (str(i).zfill(4)))
                     write_image(output_path, result)
         
@@ -163,12 +163,12 @@ class TransferModel():
 
             # init  
             init_op = tf.global_variables_initializer()
-            sess = tf.Session()
-            sess.run(init_op)
-            sess.run( self.target_net['input'].assign(self.init_img) )
+            self.sess = tf.Session()
+            self.sess.run(init_op)
+            self.sess.run( self.target_net['input'].assign(self.init_img) )
 
             # train
-            optimizer.minimize(sess) 
+            optimizer.minimize(self.sess) 
 
 
 
@@ -176,8 +176,8 @@ class TransferModel():
         '''
         out
         '''
-        print('Iteration %d: loss = %f' % (args.iteration, sess.run(self.total_loss)))
-        result = sess.run(self.target_net['input'])
+        print('Iteration %d: loss = %f' % (args.iteration, self.sess.run(self.total_loss)))
+        result = self.sess.run(self.target_net['input'])
         output_path = os.path.join(OUTPUT_PATH, 'output.jpg')
         write_image(output_path, result)
 
