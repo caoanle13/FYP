@@ -61,7 +61,7 @@ def semantic_transfer():
 
     c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
     s_mask = None
-    model = TransferModel(2, False, c_mask, s_mask)
+    model = TransferModel(1, False, c_mask, s_mask)
     model.apply_transfer()
     return render_template("output.html", image="output.jpg")
 
