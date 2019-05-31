@@ -20,7 +20,7 @@
 
     <p>Select the masks you want the style transfer to apply to:</p>
     <p>{{masks|length}} regions were found</p>
-    <form id="mask-form" action="{{ url_for('style')}}" method="POST" enctype="multipart/form-data">
+    <form id="mask-form" action="{{ url_for('semantic_transfer')}}" method="POST" enctype="multipart/form-data">
     {% for mask in masks %}
     {% set region = mask.split('_')[1].split('.')[0] %}
     <div>
