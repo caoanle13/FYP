@@ -36,12 +36,14 @@ def masks():
         return render_template("semantic_masks.html", masks=masks)
 
     elif transfer_option == "threshold":
-        content_segmentor = ThresholdModel(0)
+        n_threshold = int(request.form["n_threshold"])
+        
+        content_segmentor = ThresholdModel(0, n_threshold)
         content_segmentor.segment(path=CONTENT_IMAGE_PATH)
-        style_segmentor = ThresholdModel(1)
+        style_segmentor = ThresholdModel(1, n_threshold)
         style_segmentor.segment(path=STYLE_IMAGE_PATH)
 
-        return render_template("threshold_masks.html")
+        return render_template("threshold_masks.html", n=n_threshold)
 
 
 @app.route("/full_transfer")
@@ -73,9 +75,10 @@ def semantic_transfer():
 
 @app.route("/treshold_transfer", methods=["POST"])
 def threshold_transfer():
+    n_colors = request.form["n_colors"]
     c_mask = os.path.join(CONTENT_MASK_PATH, "threshold_mask.jpg")
     s_mask = os.path.join(STYLE_MASK_PATH, "threshold_mask.jpg")
-    model = TransferModel(2, False, c_mask, s_mask)
+    model = TransferModel(n_colors, False, c_mask, s_mask)
     model.apply_transfer()
     return render_template("output.html", image="output.jpg")
 

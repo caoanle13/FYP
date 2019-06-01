@@ -177,9 +177,48 @@ class ThresholdModel():
         Class for a Threshold Segmentation model.
     """
 
-    def __init__(self, target, threshold=None):
-        self.threshold = threshold
+    def __init__(self, target, n_threshold):
+        self.n_threshold = n_threshold
         self.SAVE_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+
+
+    def create_colored_masks(self, image, n, thresholds, colors):
+        """ Create "colored" (gray scale) masks given a grayscale numpy image and the number of threshold.
+        
+        Arguments:
+            - image {nd array}: The input image in grayscale.
+            - n {int}: Number of thresholds.
+            - thresholds {list}: Thresholds.
+            - colors {list}: Color bands.
+
+        Returns:
+            {list}: List of masks for each color band. 
+        """
+        masks = []
+        for i in range(n+1):
+            mask = np.logical_and(image > thresholds[i], image <= thresholds[i+1])
+            mask = mask.astype(np.int)
+            mask *= colors[i]
+            masks.append(mask)
+        return masks
+
+    
+    def merge_masks(self, masks, h, w):
+        """ Combines individual masks with different color bands together.
+        
+        Arguments:
+            masks {list}: List containing the individual masks as nd arrays.
+            - h {int}: Height.
+            - w {int}: Width.
+        
+        Returns:
+            {nd array}: Combined mask.
+        """
+        combined_mask = np.zeros([h,w],dtype=np.uint8)
+        for mask in masks:
+            combined_mask = combined_mask | mask
+        return combined_mask
+
 
 
 
@@ -192,21 +231,33 @@ class ThresholdModel():
             - target {int}: 0 for content image, 1 for style image.
         """
 
-        image = Image.open(path)
+        n = self.n_threshold
 
-        # If no threshold was provided, equalize the histogram and set it to 128
-        if self.threshold is None:
-            image = equalize(image)
-            self.threshold = 128
+        # Open image and equalize its histogram.
+        image = Image.open(path)
+        image = equalize(image)
+        image = equalize(image)
+        image = equalize(image)
+        image = equalize(image)
+
+        w, h = image.size
+
+        # Define gray scale bands and thresholds:
+        colors = [0]
+        thresholds = [0]
+        for i in range(1, n+1):
+            colors.append(round(255/n)*i)
+            thresholds.append(round(255/(n+1)) * i)
+        thresholds.append(255)
 
         # Convert to gray scale numpy array
         gray_image_np = np.array(image.convert(mode="L"))
 
-        # Apply threshold
-        binary_mask = gray_image_np > self.threshold
+        # Create colored mask
+        masks = self.create_colored_masks(gray_image_np, self.n_threshold, thresholds, colors)
 
-        # Convert back to PIL Image
-        output_image = boolean_to_pil(binary_mask)
+        # Combine masks together
+        final_mask = self.merge_masks(masks, h, w)
 
         # Save output
-        output_image.save(self.SAVE_DIR + "threshold_mask.jpg")
+        Image.fromarray(final_mask.astype('uint8')).save(self.SAVE_DIR + "threshold_mask.jpg")

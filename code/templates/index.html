@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/index.css">
     <title>Style Transfer App</title>
 </head>
 
@@ -14,12 +15,21 @@
         <input type="file" name="content_image" accept="image/*">
         <p>Insert style image</p>
         <input type="file" name="style_image" accept="image/*">
-        <select name="transfer-option">
+        <p>Select the type of transfer to execute</p>
+        <select name="transfer-option" onchange="dispExtraOptions()" id="transfer_select">
             <option value="full">Full Style Transfer</option>
             <option value="semantic">Semantic Style Transfer</option>
             <option value="custom" selected="selected">Custom Style Transfer</option>
             <option value="threshold">Threshold Style Transfer</option>
-          </select>
+        </select>
+        <div id="slider_option">
+        <input type="range"
+                id="n_threshold"
+                name="n_threshold"
+                min="1" max="4" value="1"
+                onchange="sliderCallBack(this)">
+        <label for="n_threshold">Number of threshold(s): <span id="n_threshold_label"></span></label>
+        </div>
         <input type="submit" value="Start Processing">
     </form>
 </body>

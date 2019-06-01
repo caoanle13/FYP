@@ -23,9 +23,9 @@
         <img src="/static/masks/style/threshold_mask.jpg">
     </div>
 
-    <p>White regions of the style image will be transfered to white regions of the content image and same for black regions.</p>
-
+    <p>Content and Style images have been segmented into <span>{{n+1}}</span> regions and style transfer will occur where appropriate.</p>
     <form id="threshold-form" action="{{ url_for('threshold_transfer')}}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="n_colors" value="{{n+1}}">
         <input type="submit" value="Style Transfer">
     </form>
 

@@ -1,3 +1,7 @@
+function init(){
+    document.getElementById("n_threshold_label").innerText = "1";
+}
+
 function validate(form) {
     var content = form.elements[0];
     var style = form.elements[1];
@@ -19,4 +23,25 @@ function validate(form) {
             return false;
         }
     }
-  }
+}
+
+
+function dispExtraOptions() {
+    var e = document.getElementById("transfer_select");
+    var selected = e.options[e.selectedIndex].value;
+    var slider = document.getElementById("slider_option");
+    if (selected === "threshold") {
+        slider.style.display="inline";
+    }
+    else {
+        slider.style.display="none";
+    }
+}
+
+
+function sliderCallBack(slider) {
+    document.getElementById("n_threshold_label").innerText = slider.value;
+}
+
+
+init();
