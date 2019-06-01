@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
 import shutil
-from segmentation.models import SemanticModel, ThresholdModel
+from segmentation.models import SemanticModel, ThresholdModel, ColourModel
 from segmentation.image_helpers import combine_masks
 from paths import *
 from clean import cleanup
@@ -42,8 +42,49 @@ def masks():
         content_segmentor.segment(path=CONTENT_IMAGE_PATH)
         style_segmentor = ThresholdModel(1, n_threshold)
         style_segmentor.segment(path=STYLE_IMAGE_PATH)
-
         return render_template("threshold_masks.html", n=n_threshold)
+
+    elif transfer_option == "colour":
+        n_colours = int(request.form["n_colours"])
+        base = int(request.form["base"])
+        
+        colour_segmentor = ColourModel(base=base, n_colours=n_colours)
+        colour_segmentor.segment(target=0)
+        colour_segmentor.segment(target=1)
+        
+        return render_template("colour_masks.html", n=n_colours)
+
+
+@app.route("/style_transfer", methods =["POST"])
+def style_transfer():
+    transfer_option = request.form["type"]
+    
+    if transfer_option == "semantic":
+        form = request.form.to_dict(flat=False)
+        selected_masks = list(form)
+        combine_masks(selected_masks, target=0)
+
+        c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
+        s_mask = None
+        n_colors = 1
+    
+    elif transfer_option == "threshold":
+        n_colors = int(request.form["n_colors"])
+        c_mask = os.path.join(CONTENT_MASK_PATH, "threshold_mask.jpg")
+        s_mask = os.path.join(STYLE_MASK_PATH, "threshold_mask.jpg")
+    
+    elif transfer_option == "colour":
+        n_colors = int(request.form["n_colors"])
+        c_mask = os.path.join(CONTENT_MASK_PATH, "colour_mask.jpg")
+        s_mask = os.path.join(STYLE_MASK_PATH, "colour_mask.jpg")
+
+    hard_width = 512
+
+    model = TransferModel(n_colors, hard_width, c_mask, s_mask)
+    model.apply_transfer()
+    
+    return render_template("output.html", image="output.jpg")
+
 
 
 @app.route("/full_transfer")
@@ -53,35 +94,6 @@ def full_transfer():
     model = TransferModel(1, False, c_mask, s_mask)
     model.apply_transfer()
     return render_template("output.html", image="output.jpg")
-
-
-@app.route("/semantic_transfer", methods=["POST"])
-def semantic_transfer():
-    form = request.form.to_dict(flat=False)
-    selected_masks = list(form)
-    combine_masks(selected_masks, target=0)
-
-    c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
-    s_mask = None
-    model = TransferModel(1, False, c_mask, s_mask)
-    model.apply_transfer()
-    return render_template("output.html", image="output.jpg")
-
-    transfer_style("content_image.jpg", "final_mask.jpg", "style_image.jpg")
-
-    return render_template("output.html", image="output.jpg")
-
-
-
-@app.route("/treshold_transfer", methods=["POST"])
-def threshold_transfer():
-    n_colors = request.form["n_colors"]
-    c_mask = os.path.join(CONTENT_MASK_PATH, "threshold_mask.jpg")
-    s_mask = os.path.join(STYLE_MASK_PATH, "threshold_mask.jpg")
-    model = TransferModel(n_colors, False, c_mask, s_mask)
-    model.apply_transfer()
-    return render_template("output.html", image="output.jpg")
-
 
 
 

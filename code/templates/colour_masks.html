@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
 </head>
-<h2>Threshold segmentation output</h2>
+<h2>Colour seglentation output</h2>
 <body>
 
     
@@ -13,20 +13,20 @@
         <p>Original Content Image</p>
         <img src="/static/images/content_image.jpg">
         <p>Output of segmentation</p>
-        <img src="/static/masks/content/threshold_mask.jpg">
+        <img src="/static/masks/content/colour_mask.jpg">
     </div>
 
     <div>
         <p>Original Style Image</p>
         <img src="/static/images/style_image.jpg">
         <p>Output of segmentation</p>
-        <img src="/static/masks/style/threshold_mask.jpg">
+        <img src="/static/masks/style/colour_mask.jpg">
     </div>
 
-    <p>Content and Style images have been segmented into <span>{{n+1}}</span> regions and style transfer will occur where appropriate.</p>
+    <p>Content and Style images have been segmented into <span>{{n}}</span> regions and style transfer will occur where appropriate.</p>
     <form id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="type" value="threshold">
-        <input type="hidden" name="n_colors" value="{{n+1}}">
+        <input type="hidden" name="type" value="colour">
+        <input type="hidden" name="n_colors" value="{{n}}">
         <input type="submit" value="Style Transfer">
     </form>
 

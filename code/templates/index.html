@@ -17,17 +17,27 @@
         <input type="file" name="style_image" accept="image/*">
         <p>Select the type of transfer to execute</p>
         <select name="transfer-option" onchange="dispExtraOptions()" id="transfer_select">
-            <option value="full">Full Style Transfer</option>
+            <option value="full" selected="selected">Full Style Transfer</option>
             <option value="semantic">Semantic Style Transfer</option>
-            <option value="custom" selected="selected">Custom Style Transfer</option>
+            <option value="colour">Colour Style Transfer</option>
             <option value="threshold">Threshold Style Transfer</option>
         </select>
-        <div id="slider_option">
+        <div id="colour_option">
+            <input type="range"
+                    id="n_colours"
+                    name="n_colours"
+                    min="2" max="5" value="4"
+                    onchange="colourSliderCallback(this)">
+            <label for="n_colours">Number of colours: <span id="n_colours_label"></span></label>
+            <input type="radio" name="base" value="0"> Content Image <br>
+            <input type="radio" name="base" value ="1"> Style Image <br>
+        </div>
+        <div id="threshold_option">
         <input type="range"
                 id="n_threshold"
                 name="n_threshold"
                 min="1" max="4" value="1"
-                onchange="sliderCallBack(this)">
+                onchange="thresholdSliderCallback(this)">
         <label for="n_threshold">Number of threshold(s): <span id="n_threshold_label"></span></label>
         </div>
         <input type="submit" value="Start Processing">

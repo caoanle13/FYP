@@ -5,6 +5,9 @@ import numpy as np
 import tensorflow as tf
 from shutil import rmtree
 from paths import *
+import imageio
+from scipy.cluster.vq import whiten, kmeans
+from scipy.spatial.distance import euclidean
 
 sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
@@ -224,7 +227,7 @@ class ThresholdModel():
 
     def segment(self, path):
         """ Function to perform threshold segmentation.
-        It saves a binary mask, where black pixels areas with intensity lower than the threshold.
+        It saves a "coloured" mask.
         
         Arguments:
             - path {str}: Path to the input image to be thresholded.
@@ -236,10 +239,7 @@ class ThresholdModel():
         # Open image and equalize its histogram.
         image = Image.open(path)
         image = equalize(image)
-        image = equalize(image)
-        image = equalize(image)
-        image = equalize(image)
-
+       
         w, h = image.size
 
         # Define gray scale bands and thresholds:
@@ -261,3 +261,108 @@ class ThresholdModel():
 
         # Save output
         Image.fromarray(final_mask.astype('uint8')).save(self.SAVE_DIR + "threshold_mask.jpg")
+
+
+
+
+
+
+class ColourModel():
+    """ 
+        Class for a Colour-based Segmentation model.
+    """
+
+    def __init__(self, base, n_colours):
+        """ Constructor function for the colour-based segmentation model class.
+        
+        Arguments:
+            - base {int}: 0 for content 1 for style -> choose colour palette.
+            - target {int}: 0 for content 1 for style -> image on which to apply the colour segementation.
+            - n_colours {int}: number of dominant colours to consider.
+        """
+
+        print("Initialisaing colour-based segmentor model...")
+        self.n_colours = n_colours
+        self.BASE_PATH = STYLE_IMAGE_PATH if base else CONTENT_IMAGE_PATH   
+        self.dom_cols = self.dominant_colours(self.BASE_PATH)
+
+
+    def dominant_colours(self, path):
+        """ Function to find the dominant colours of in an image.
+        
+        Arguments:
+            - path {str}: Path to the input image.
+        
+        Returns:
+             {list}: List of RGB dominant colours.
+        """
+
+        print("Looking for the {} most dominant colours in {}...".format(self.n_colours, path))
+        
+        # Read input image and get separate channels
+        img = np.array(imageio.imread(path))
+        r = img[:,:,0].flatten()
+        g = img[:,:,1].flatten()
+        b = img[:,:,2].flatten()  
+
+        # Standardise variables for KMeans algorithm
+        scaled_r = whiten(r)
+        scaled_g = whiten(g)
+        scaled_b = whiten(b)
+
+        # Run KMeans to find main clusters
+        cluster_centers, distortion = kmeans(np.transpose([scaled_r, scaled_g, scaled_b]), self.n_colours)
+        out_colours = []
+
+        # Construct and return the result
+        for colour in cluster_centers:
+            scaled_r, scaled_g, scaled_b = colour
+            out_colours.append([
+                int(scaled_r * r.std()),
+                int(scaled_g * g.std()),
+                int(scaled_b * b.std())
+            ])
+        
+        return out_colours
+
+
+
+    def segment(self, target):
+        """ Function to perform colour-based segmentation.
+        
+        Arguments:
+            - target {int}: Image to be thresholded: 0 for content 1 for style.
+        """
+
+        path = STYLE_IMAGE_PATH if target else CONTENT_IMAGE_PATH
+
+        print("Doing the colour segmentation on {}...".format(path))
+
+        # Open image
+        image = np.array(imageio.imread(path))
+        output_image = np.empty(image.shape)
+        
+        # Replace every pixel by the nearest neighbor in the dominant colours
+        for i, row in enumerate(image):
+            for j, pix in enumerate(row):
+                out_colour = self.dom_cols[0]
+                min_dist = euclidean(pix, out_colour)
+                for colour in self.dom_cols:
+                    temp = euclidean(pix, colour)
+                    if temp < min_dist:
+                        min_dist  = temp
+                        out_colour = colour
+                output_image[i][j] = out_colour
+
+
+        
+        # Save output
+        SAVE_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+        print("Saving the colour segmentation output 'colour_mask.jpg' in {}...".format(SAVE_DIR))
+        imageio.imwrite(SAVE_DIR + "colour_mask.jpg", output_image)
+
+
+if __name__ == "__main__":
+
+    cm = ColourModel(0, 3)
+

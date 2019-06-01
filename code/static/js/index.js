@@ -1,4 +1,5 @@
 function init(){
+    document.getElementById("n_colours_label").innerText = "4";
     document.getElementById("n_threshold_label").innerText = "1";
 }
 
@@ -29,17 +30,27 @@ function validate(form) {
 function dispExtraOptions() {
     var e = document.getElementById("transfer_select");
     var selected = e.options[e.selectedIndex].value;
-    var slider = document.getElementById("slider_option");
+    var thresholdOption = document.getElementById("threshold_option");
+    var colourOption = document.getElementById("colour_option");
     if (selected === "threshold") {
-        slider.style.display="inline";
+        thresholdOption.style.display="inline";
+        colourOption.style.display="none";
+    } else if (selected === "colour") {
+        thresholdOption.style.display="none";
+        colourOption.style.display="inline";
+    } else {
+        thresholdOption.style.display = "none";
+        colourOption.style.display = "none";
     }
-    else {
-        slider.style.display="none";
-    }
+
 }
 
 
-function sliderCallBack(slider) {
+function colourSliderCallback(slider) {
+    document.getElementById("n_colours_label").innerText = slider.value;
+}
+
+function thresholdSliderCallback(slider) {
     document.getElementById("n_threshold_label").innerText = slider.value;
 }
 
