@@ -61,7 +61,7 @@ def style_transfer():
     
     if transfer_option == "semantic":
         form = request.form.to_dict(flat=False)
-        selected_masks = list(form)
+        selected_masks = [x for x in list(form) if x != "type"]
         combine_masks(selected_masks, target=0)
 
         c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
@@ -78,7 +78,7 @@ def style_transfer():
         c_mask = os.path.join(CONTENT_MASK_PATH, "colour_mask.jpg")
         s_mask = os.path.join(STYLE_MASK_PATH, "colour_mask.jpg")
 
-    hard_width = 512
+    hard_width = False
 
     model = TransferModel(n_colors, hard_width, c_mask, s_mask)
     model.apply_transfer()
