@@ -11,12 +11,10 @@ function validate(form) {
 
     if (content.value === "") {
         alert("Please upload a content image.");
-        content.focus();
         return false;
     }
     else if (style.value === "") {
         alert("Please upload a style image as well.");
-        style.focus();
         return false;
     }
     else if (options.selectedIndex === 0) {
@@ -24,6 +22,7 @@ function validate(form) {
             return false;
         }
     }
+    activateLoader();
 }
 
 
@@ -53,6 +52,56 @@ function colourSliderCallback(slider) {
 function thresholdSliderCallback(slider) {
     document.getElementById("n_threshold_label").innerText = slider.value;
 }
+
+
+function previewContentImage() {
+    var preview = document.querySelector('img#content-image');
+    var file = document.querySelector('input#hidden-content-image').files[0];
+    var reader = new FileReader();
+
+    reader.addEventListener("load", function () {
+        preview.style.display = 'block';
+        preview.src = reader.result;
+    }, false);
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+}
+
+function previewStyleImage() {
+    var preview = document.querySelector('img#style-image');
+    var file = document.querySelector('input#hidden-style-image').files[0];
+    var reader = new FileReader();
+
+
+    reader.addEventListener("load", function () {
+        preview.style.display = 'block';
+        preview.src = reader.result;
+    }, false);
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+}
+
+function activateLoader() {
+    
+    var dimmer = document.getElementById("loader_dimmer");
+    var loader = document.getElementById("segmentation_loader");
+
+    var e = document.getElementById("transfer_select");
+    var selected = e.options[e.selectedIndex].value;
+
+    if (selected !== 'full') {
+        loader.innerText = 'Performing ' + selected + ' segmentation...';
+    } else {
+        loader.innerText = 'Performing full style transfer...';
+    }
+
+    $('.ui.basic.modal').modal('show');
+}
+
 
 
 init();

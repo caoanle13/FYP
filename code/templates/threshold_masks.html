@@ -3,32 +3,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <link rel="stylesheet" href="../static/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <title>Style Transfer App</title>
 </head>
-<h2>Threshold segmentation output</h2>
+
+
 <body>
 
-    
-    <div>
-        <p>Original Content Image</p>
-        <img src="/static/images/content_image.jpg">
-        <p>Output of segmentation</p>
-        <img src="/static/masks/content/threshold_mask.jpg">
-    </div>
+    <!-- Menu header bar -->
 
-    <div>
-        <p>Original Style Image</p>
-        <img src="/static/images/style_image.jpg">
-        <p>Output of segmentation</p>
-        <img src="/static/masks/style/threshold_mask.jpg">
-    </div>
+    <div class="ui brown secondary pointing huge inverted menu" id="navbar">
+            <a href="{{ url_for('index')}}" class="active item">
+                <i class="paint brush icon"></i>
+                <strong>Style Transfer App</strong>
+            </a>
+            <a class="item">
+                <!-- Add item if needed -->
+            </a>
+            <div class="right menu">
+                <a href="{{ url_for('index')}}" class="ui item">
+                    <i class="redo alternate icon"></i>
+                    Back
+                </a>
+                <a href="{{ url_for('index')}}" class="ui item">
+                    <i class="home icon"></i>
+                    Home
+                </a>
+            </div>
+    </div><br>
 
-    <p>Content and Style images have been segmented into <span>{{n+1}}</span> regions and style transfer will occur where appropriate.</p>
-    <form id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="type" value="threshold">
-        <input type="hidden" name="n_colors" value="{{n+1}}">
-        <input type="submit" value="Style Transfer">
-    </form>
+
+    <div class="ui center aligned container main">
+        <h2><i class="compress icon"></i>
+            <strong>Threshold Segmentation Output</strong></h2><br>
+
+            <div class="ui segment">
+                <div class="ui two column very relaxed grid">
+                    <div class="column">
+                        <h5>Original Content Image</h5>
+                        <img class="ui centered medium bordered image" id="content-image"
+                            src="/static/images/content_image.jpg" height="200">
+                    </div>
+                    <div class="column">
+                        <h5>Segmentation Output</h5>
+                        <img class="ui centered medium bordered image" id="content-image"
+                            src="/static/masks/content/threshold_mask.jpg" height="200">
+                    </div>
+                </div>
+                <div class="ui vertical divider">
+                    <i class="right arrow icon"></i>
+                </div>
+            </div>
+
+            <div class="ui segment">
+                <div class="ui two column very relaxed grid">
+                    <div class="column">
+                        <h5>Original Style Image</h5>
+                        <img class="ui centered medium bordered image" id="content-image"
+                            src="/static/images/style_image.jpg" height="200">
+                    </div>
+                    <div class="column">
+                        <h5>Segmentation Output</h5>
+                        <img class="ui centered medium bordered image" id="content-image"
+                            src="/static/masks/style/threshold_mask.jpg" height="200">
+                    </div>
+                </div>
+                <div class="ui vertical divider">
+                    <i class="right arrow icon"></i>
+                </div>
+            </div><br>
+
+
+            <div class="ui one column center aligned page grid">
+            
+                </p><strong>
+                    Content and Style images have been segmented into <span>{{n+1}}</span> regions and style transfer will occur where appropriate. 
+                </strong> 
+                <p>
+                    
+
+                <div class="ui form">
+                    <form id="style-form" action="{{ url_for('style_transfer')}}" method="POST"
+                        enctype="multipart/form-data">
+                        <input type="hidden" name="type" value="threshold">
+                        <input type="hidden" name="n_colors" value="{{n+1}}">
+                        <button type="submit" class="ui button" value="Style Transfer">Style Transfer</button>
+                    </form>
+                
+                </div>
+            </div>
+
+    </div>
+   
 
 </body>
 </html>

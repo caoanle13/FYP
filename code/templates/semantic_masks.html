@@ -1,15 +1,123 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <title>Style Transfer App</title>
 </head>
-<h2>Select masks for guided style transfer</h2>
+
 <body>
 
+    <!-- Menu header bar -->
+
+    <div class="ui brown secondary pointing huge inverted menu" id="navbar">
+            <a href="{{ url_for('index')}}" class="active item">
+                <i class="paint brush icon"></i>
+                <strong>Style Transfer App</strong>
+            </a>
+            <a class="item">
+                <!-- Add item if needed -->
+            </a>
+            <div class="right menu">
+                <a href="{{ url_for('index')}}" class="ui item">
+                    <i class="redo alternate icon"></i>
+                    Back
+                </a>
+                <a href="{{ url_for('index')}}" class="ui item">
+                    <i class="home icon"></i>
+                    Home
+                </a>
+            </div>
+    </div><br>
+
+
+
+    <div class="ui center aligned container main">
+        <h2><i class="compress icon"></i>
+            <strong>Semantic Segmentation Output</strong></h2><br>
+
+        <div class="ui segment">
+            <div class="ui three column very relaxed grid">
+                <div class="column">
+                    <h5>Original Content Image</h5>
+                    <img class="ui centered medium bordered image"
+                        src="/static/images/content_image.jpg" height="200">
+                </div>
+                <div class="column">
+                    <h5>Segmentation Output</h5>
+                    <img class="ui centered medium bordered image"
+                        src="/static/masks/content/segmentation_mask.jpg" height="200">
+                </div>
+                <div class="column">
+                        <h5>Overlay</h5>
+                        <img class="ui centered medium bordered image"
+                            src="/static/masks/content/superimposed_image.jpg" height="200">
+                    </div>
+            </div>
+        </div><br>
+
+        <h4 class="ui horizontal divider header">
+            <i class="clone outline icon"></i>
+            Masks Selection
+        </h4>
+
+        <form class="ui form" id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
+        <div class="ui four column very relaxed grid">
+                <input type="hidden" name="type" value="semantic">
+                {% for mask in masks %}
+                {% set region = mask.split('_')[1].split('.')[0] %}
+                <div class="column">
+                    <div class="ui label">
+                        <i class="mail icon"></i> {{region}}
+                        <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
+                    </div>
+                    <label for="{{mask}}">
+                        <img class="ui image" src="static/masks/content/{{mask}}"/>
+                    </label>
+                </div>
+                {% endfor %}
+                <input type="submit" value="Style Transfer">
+        </div>
+        </form>
+        <button type="submit" form="style-form" class="ui animated button" tabindex="0">
+            <div class="visible content">Style Transfer</div>
+            <div class="hidden content">
+                <i class="bolt icon"></i>
+            </div>
+        </button>
+
+
+        <div class="ui one column center aligned page grid">
+        
+        
+           <!--  <div class="ui form">
+                <form id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="type" value="semantic">
+                    {% for mask in masks %}
+                    {% set region = mask.split('_')[1].split('.')[0] %}
+                    <div>
+                        <p>{{region}}</p>
+                        <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
+                        <label for="{{mask}}"><img src="static/masks/content/{{mask}}" height="200" /></label>
+                    </div>
+                    {% endfor %}
+                    <input type="submit" value="Style Transfer">
+                </form> -->
+            
+            </div>
+        </div>
+
+    </div>
+
     
-    <div>
+   <!--  <div>
         <p>Original Image</p>
         <img src="/static/images/content_image.jpg">
         <p>Output of segmentation</p>
@@ -33,7 +141,7 @@
         </div>
         {% endfor %}
         <input type="submit" value="Style Transfer">
-    </form>
+    </form> -->
 
 </body>
 </html>
