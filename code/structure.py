@@ -62,7 +62,7 @@ def produce_zip(folder):
       - data: Compressed data.
    """
    zipf = zipfile.ZipFile("summary.zip", "w", zipfile.ZIP_DEFLATED)
-   for root, dirs, files in os.walk("./static/summary"):
+   for root, dirs, files in os.walk(folder):
       for file in files:
          zipf.write(os.path.join(root, file))
    zipf.close()

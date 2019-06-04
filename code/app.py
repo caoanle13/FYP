@@ -140,7 +140,7 @@ def download_results():
     produce_zip(SUMMARY_PATH)
 
     return send_file(
-        filename_or_fp="./static/summary.zip",
+        filename_or_fp="static/summary.zip",
         mimetype='application/zip',
         as_attachment=True,
         attachment_filename='summary.zip'
