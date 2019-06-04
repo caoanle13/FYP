@@ -136,7 +136,7 @@ def full_transfer():
 
 
 @app.route('/download_results')
-def request_zip():
+def download_results():
     data = produce_zip(SUMMARY_PATH)
     return send_file(
         data,
