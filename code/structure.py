@@ -61,14 +61,11 @@ def produce_zip(folder):
    Returns:
       - data: Compressed data.
    """
-   base_path = pathlib.Path(folder)
-   data = io.BytesIO()
-   with zipfile.ZipFile(data, mode='w') as z:
-      for f_name in base_path.iterdir():
-         z.write(f_name)
-   data.seek(0)
-
-   return data
+   zipf = zipfile.ZipFile("summary.zip", "w", zipfile.ZIP_DEFLATED)
+   for root, dirs, files in os.walk("./static/summary"):
+      for file in files:
+         zipf.write(os.path.join(root, file))
+   zipf.close()
 
 
 

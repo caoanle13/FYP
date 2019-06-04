@@ -137,9 +137,10 @@ def full_transfer():
 
 @app.route('/download_results')
 def download_results():
-    data = produce_zip(SUMMARY_PATH)
+    produce_zip(SUMMARY_PATH)
+
     return send_file(
-        data,
+        filename_or_fp="./static/summary.zip",
         mimetype='application/zip',
         as_attachment=True,
         attachment_filename='summary.zip'
