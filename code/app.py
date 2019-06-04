@@ -137,7 +137,7 @@ def full_transfer():
 
 @app.route('/download_results')
 def download_results():
-    produce_zip(SUMMARY_PATH)
+    shutil.make_archive(base_name="static/summary", format="zip", root_dir=SUMMARY_PATH)
 
     return send_file(
         filename_or_fp="static/summary.zip",
