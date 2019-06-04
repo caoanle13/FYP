@@ -15,6 +15,15 @@
 
 <body>
 
+    <!-- Loader -->
+    <div class="ui basic modal">
+        <div class="ui header">
+            <div id="style_loader" class="ui huge text loader">
+                Performing semantic style transfer...
+            </div>
+        </div>
+    </div>
+
     <!-- Menu header bar -->
 
     <div class="ui brown secondary pointing huge inverted menu" id="navbar">
@@ -68,7 +77,8 @@
             Masks Selection
         </h4>
 
-        <form class="ui form" id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
+        <form class="ui form" id="style-form" action="{{ url_for('style_transfer')}}"
+            method="POST" enctype="multipart/form-data">
         <div class="ui four column very relaxed grid">
                 <input type="hidden" name="type" value="semantic">
                 {% for mask in masks %}
@@ -83,9 +93,9 @@
                     </label>
                 </div>
                 {% endfor %}
-                <input type="submit" value="Style Transfer">
         </div>
         </form>
+
         <button type="submit" form="style-form" class="ui animated button" tabindex="0">
             <div class="visible content">Style Transfer</div>
             <div class="hidden content">
@@ -94,54 +104,11 @@
         </button>
 
 
-        <div class="ui one column center aligned page grid">
-        
-        
-           <!--  <div class="ui form">
-                <form id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="type" value="semantic">
-                    {% for mask in masks %}
-                    {% set region = mask.split('_')[1].split('.')[0] %}
-                    <div>
-                        <p>{{region}}</p>
-                        <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
-                        <label for="{{mask}}"><img src="static/masks/content/{{mask}}" height="200" /></label>
-                    </div>
-                    {% endfor %}
-                    <input type="submit" value="Style Transfer">
-                </form> -->
-            
-            </div>
-        </div>
-
     </div>
 
-    
-   <!--  <div>
-        <p>Original Image</p>
-        <img src="/static/images/content_image.jpg">
-        <p>Output of segmentation</p>
-        <img src="/static/masks/content/segmentation_mask.jpg">
-        <p>Overlay</p>
-        <img src="/static/masks/content/superimposed_image.jpg">
-    </div>
-
-    <p>Select the masks you want the style transfer to apply to:</p>
-
-    <p>{{masks|length}} regions were found</p>
-
-    <form id="style-form" action="{{ url_for('style_transfer')}}" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="type" value="semantic">
-        {% for mask in masks %}
-        {% set region = mask.split('_')[1].split('.')[0] %}
-        <div>
-            <p>{{region}}</p>
-            <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
-            <label for="{{mask}}"><img src="static/masks/content/{{mask}}" height="200" /></label>
-        </div>
-        {% endfor %}
-        <input type="submit" value="Style Transfer">
-    </form> -->
 
 </body>
+
+<script src="../static/js/semantic_masks.js"></script>
+
 </html>

@@ -15,6 +15,14 @@
 
 
 <body>
+    <!-- Loader -->
+    <div class="ui basic modal">
+        <div class="ui header">
+            <div id="style_loader" class="ui huge text loader">
+                Performing threshold-based style transfer...
+            </div>
+        </div>
+    </div>
 
     <!-- Menu header bar -->
 
@@ -93,8 +101,14 @@
                         enctype="multipart/form-data">
                         <input type="hidden" name="type" value="threshold">
                         <input type="hidden" name="n_colors" value="{{n+1}}">
-                        <button type="submit" class="ui button" value="Style Transfer">Style Transfer</button>
                     </form>
+
+                    <button type="submit" form="style-form" class="ui animated button" tabindex="0">
+                        <div class="visible content">Style Transfer</div>
+                        <div class="hidden content">
+                            <i class="bolt icon"></i>
+                        </div>
+                    </button>
                 
                 </div>
             </div>
