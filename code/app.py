@@ -138,7 +138,7 @@ def full_transfer():
 @app.route('/download_results')
 def request_zip():
     data = produce_zip(SUMMARY_PATH)
-    return fl.send_file(
+    return send_file(
         data,
         mimetype='application/zip',
         as_attachment=True,
