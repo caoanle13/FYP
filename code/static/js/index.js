@@ -87,7 +87,6 @@ function previewStyleImage() {
 
 function activateLoader() {
     
-    var dimmer = document.getElementById("loader_dimmer");
     var loader = document.getElementById("segmentation_loader");
 
     var e = document.getElementById("transfer_select");

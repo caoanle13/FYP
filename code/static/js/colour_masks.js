@@ -1,4 +1,4 @@
 var form = document.getElementById("style-form");
-form.addEventListener(onsubmit, function() {
+form.addEventListener('submit', function() {
     $('.ui.basic.modal').modal('show');
 });
