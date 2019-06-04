@@ -130,7 +130,7 @@ def full_transfer():
     s_mask = None
     model = TransferModel(1, False, c_mask, s_mask)
     model.apply_transfer()
-    add_summary_files([OUTPUT_IMAGE_PATH], [None])
+    add_summary_files([OUTPUT_IMAGE_PATH])
     return render_template("output.html", image="output.jpg")
 
 
