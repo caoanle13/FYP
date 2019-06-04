@@ -13,6 +13,29 @@
 </head>
 <body>
 
+     <!-- Menu header bar -->
+
+     <div class="ui brown secondary pointing huge inverted menu" id="navbar">
+            <a href="{{ url_for('index')}}" class="active item">
+                <i class="paint brush icon"></i>
+                <strong>Style Transfer App</strong>
+            </a>
+            <a class="item">
+                <!-- Add item if needed -->
+            </a>
+            <div class="right menu">
+                <a href="{{ url_for('index')}}" class="ui item">
+                    <i class="redo alternate icon"></i>
+                    Back
+                </a>
+                <a href="{{ url_for('index')}}" class="ui item">
+                    <i class="home icon"></i>
+                    Home
+                </a>
+            </div>
+    </div><br>
+    
+
     <h4 class="ui horizontal divider header">
         <i class="smile outline icon"></i>
         Style Transfer Output
