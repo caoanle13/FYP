@@ -109,6 +109,7 @@
                 <div class="ui one column center aligned page grid"><br>
                     <div class="ui segment">
                         <h5>Select the type of transfer to execute</h5>
+
                         <select class="ui dropdown" name="transfer-option" onchange="dispExtraOptions()"
                             id="transfer_select">
                             <option value="full" selected="selected">Full Style Transfer</option>
@@ -136,6 +137,11 @@
                                 onchange="thresholdSliderCallback(this)"><br>
                             <label for="n_threshold">Number of threshold(s): <span id="n_threshold_label"></span>
                             </label><br><br>
+                        </div>
+                        
+                        <div class="ui toggle checkbox" id="region_option">
+                            <input type="checkbox" name="region_toggle" id="region_toggle">
+                            <label for="region_toggle">Toggle the button if you wish to define allowed regions yourself.</label>
                         </div>
 
                         <button class="ui button" type="submit">Start Processing</button>

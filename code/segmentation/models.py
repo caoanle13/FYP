@@ -161,10 +161,10 @@ class SemanticModel():
         # Save them as PIL images
         for i, mask in enumerate(masks):
             mask = mask[:,:,0]
-            if np.sum(mask) * 10 > mask.size: # Making sure the region covers at least a 10th of the image area
-                mask = boolean_to_pil(mask)
-                mask = mask.resize(input_size)
-                mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
+            #if np.sum(mask) * 10 > mask.size: # Making sure the region covers at least a 10th of the image area
+            mask = boolean_to_pil(mask)
+            mask = mask.resize(input_size)
+            mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
 
         # Superimpose the image and its mask
         superimposed_image = superimpose(image, rgb_segmentation_mask)
@@ -180,12 +180,15 @@ class ThresholdModel():
         Class for a Threshold Segmentation model.
     """
 
-    def __init__(self, target, n_threshold):
+    def __init__(self, target, n_threshold, user_defined):
         self.n_threshold = n_threshold
         self.SAVE_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+        self.type = "style" if target else "content"
+        self.save_name = self.type + "_threshold_mask.jpg"
+        self.user_defined = user_defined
 
 
-    def create_colored_masks(self, image, n, thresholds, colors):
+    def create_colored_masks(self, image, thresholds, colors):
         """ Create "colored" (gray scale) masks given a grayscale numpy image and the number of threshold.
         
         Arguments:
@@ -198,7 +201,7 @@ class ThresholdModel():
             {list}: List of masks for each color band. 
         """
         masks = []
-        for i in range(n+1):
+        for i in range(len(colors)):
             mask = np.logical_and(image > thresholds[i], image <= thresholds[i+1])
             mask = mask.astype(np.int)
             mask *= colors[i]
@@ -223,6 +226,22 @@ class ThresholdModel():
         return combined_mask
 
 
+    def produce_masks(self, image, colours):
+        """ Helper function to produce separate masks from segmentation mask with colours.
+        
+        Arguments:
+            - image {nd array}: numpy array containing colours for individual regions.
+        Returns:
+            {list}: list of masks which are boolean numpy arrays (1 mask per class label).
+        """
+        
+        masks = []
+        for colour in colours:
+            masks.append(image == colour)
+        return masks
+
+
+
 
 
     def segment(self, path):
@@ -233,6 +252,8 @@ class ThresholdModel():
             - path {str}: Path to the input image to be thresholded.
             - target {int}: 0 for content image, 1 for style image.
         """
+
+        print("Doing the threhsold segmentation on {}...".format(path))
 
         n = self.n_threshold
 
@@ -246,7 +267,7 @@ class ThresholdModel():
         colors = [0]
         thresholds = [0]
         for i in range(1, n+1):
-            colors.append(round(255/n)*i)
+            colors.append(round(255/n)*i-1)
             thresholds.append(round(255/(n+1)) * i)
         thresholds.append(255)
 
@@ -254,13 +275,24 @@ class ThresholdModel():
         gray_image_np = np.array(image.convert(mode="L"))
 
         # Create colored mask
-        masks = self.create_colored_masks(gray_image_np, self.n_threshold, thresholds, colors)
-
+        coloured_masks = self.create_colored_masks(gray_image_np, thresholds, colors)
+            
         # Combine masks together
-        final_mask = self.merge_masks(masks, h, w)
+        output_mask = self.merge_masks(coloured_masks, h, w)
 
         # Save output
-        Image.fromarray(final_mask.astype('uint8')).save(self.SAVE_DIR + "threshold_mask.jpg")
+        img = Image.fromarray(output_mask.astype('uint8'))
+        img.save(self.SAVE_DIR + self.save_name)
+
+
+        if self.user_defined:
+             # Produce individual masks for each label
+            masks = self.produce_masks(output_mask, colors)
+
+            # Save them as PIL images
+            for mask, color in zip(masks, colors):
+                mask = boolean_to_pil(mask)
+                mask.save(self.SAVE_DIR + self.type + "_mask_" + str(color) + ".jpg")
 
 
 
@@ -272,7 +304,7 @@ class ColourModel():
         Class for a Colour-based Segmentation model.
     """
 
-    def __init__(self, base, n_colours):
+    def __init__(self, base, n_colours, user_defined):
         """ Constructor function for the colour-based segmentation model class.
         
         Arguments:
@@ -281,10 +313,11 @@ class ColourModel():
             - n_colours {int}: number of dominant colours to consider.
         """
 
-        print("Initialisaing colour-based segmentor model...")
+        print("Initialising the colour-based segmentor model...")
         self.n_colours = n_colours
         self.BASE_PATH = STYLE_IMAGE_PATH if base else CONTENT_IMAGE_PATH   
         self.dom_cols = self.dominant_colours(self.BASE_PATH)
+        self.user_defined = user_defined
 
 
     def dominant_colours(self, path):
@@ -325,6 +358,20 @@ class ColourModel():
         
         return out_colours
 
+    def produce_masks(self, image, colours):
+        """ Helper function to produce separate COLOURED masks from segmentation mask with colours.
+        
+        Arguments:
+            - image {nd array}: numpy array containing colours for individual regions.
+        Returns:
+            {list}: list of masks which are boolean numpy arrays (1 mask per class label).
+        """
+        masks = []
+        
+        for colour in colours:
+            selection = (image == colour)
+            masks.append(np.multiply(selection, image))
+        return masks
 
 
     def segment(self, target):
@@ -354,12 +401,22 @@ class ColourModel():
                         out_colour = colour
                 output_image[i][j] = out_colour
 
-
         
         # Save output
         SAVE_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
-        print("Saving the colour segmentation output 'colour_mask.jpg' in {}...".format(SAVE_DIR))
-        imageio.imwrite(SAVE_DIR + "colour_mask.jpg", output_image)
+        mask_type = "style" if target else "content"
+        save_name = mask_type + "_colour_mask.jpg"
+        print("Saving the colour segmentation output '{}_colour_mask.jpg' in {}...".format(mask_type, SAVE_DIR))
+        imageio.imwrite(SAVE_DIR + save_name, output_image)
+
+        if self.user_defined:
+             # Produce individual masks for each label
+            masks = self.produce_masks(output_image, self.dom_cols)
+
+            # Save them as PIL images
+            for mask, color in zip(masks, self.dom_cols):
+                mask = array_to_pil(mask)
+                mask.save(SAVE_DIR + mask_type + "_mask_" + str(color) + ".jpg")
 
 
 if __name__ == "__main__":

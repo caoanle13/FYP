@@ -4,8 +4,9 @@ import shutil
 from segmentation.models import SemanticModel, ThresholdModel, ColourModel
 from segmentation.image_helpers import combine_masks
 from paths import *
-from structure import cleanup, add_summary_files, write_to_summary_file, produce_zip
+from structure import cleanup, log_files, log_text, produce_zip
 from stylisation.style_transfer_model import TransferModel
+from constants import numbers
 
 app = Flask(__name__)
 
@@ -26,11 +27,13 @@ def masks():
     style_image.save(STYLE_IMAGE_PATH)
 
     transfer_option = request.form["transfer-option"]
+    user_defined_regions = request.form.get('region_toggle') == "on"
 
-    write_to_summary_file("CONTENT: " + content_image.filename)
-    write_to_summary_file("STYLE: " + style_image.filename) 
-    write_to_summary_file("OPTION: " + transfer_option)
-    add_summary_files([CONTENT_IMAGE_PATH, STYLE_IMAGE_PATH])
+    log_text("CONTENT: " + content_image.filename)
+    log_text("STYLE: " + style_image.filename) 
+    log_text("OPTION: " + transfer_option)
+    log_text("USER DEFINED REGION: " + str(user_defined_regions))
+    log_files([CONTENT_IMAGE_PATH, STYLE_IMAGE_PATH])
 
     if transfer_option == "full":
         return redirect(url_for('full_transfer'))
@@ -41,50 +44,126 @@ def masks():
         masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("mask_")]
 
         masks_path = [os.path.join(CONTENT_MASK_PATH, mask) for mask in masks]
-        add_summary_files(masks_path)
+        log_files(masks_path)
 
         return render_template("semantic_masks.html", masks=masks)
 
     elif transfer_option == "threshold":
         n_threshold = int(request.form["n_threshold"])
-        write_to_summary_file("N THRESHOLD: " + str(n_threshold))
+        log_text("N THRESHOLD: " + str(n_threshold))
         
-        content_segmentor = ThresholdModel(0, n_threshold)
+        content_segmentor = ThresholdModel(
+            target=0,
+            n_threshold=n_threshold,
+            user_defined=user_defined_regions
+            )
+
+        style_segmentor = ThresholdModel(
+            target=1,
+            n_threshold=n_threshold,
+            user_defined=user_defined_regions
+            )
+
         content_segmentor.segment(path=CONTENT_IMAGE_PATH)
-        style_segmentor = ThresholdModel(1, n_threshold)
         style_segmentor.segment(path=STYLE_IMAGE_PATH)
 
         masks_path = [
-            os.path.join(CONTENT_MASK_PATH, "threshold_mask.jpg"),
-            os.path.join(STYLE_MASK_PATH, "threshold_mask.jpg")
-            ]
+            os.path.join(CONTENT_MASK_PATH, "content_threshold_mask.jpg"),
+            os.path.join(STYLE_MASK_PATH, "style_threshold_mask.jpg")
+        ]
 
-        add_summary_files(masks_path, ["content_threshold_mask.jpg", "style_threshold_mask.jpg"])
+        if user_defined_regions:
+            content_masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("content_mask_")]
+            style_masks = [file for file in os.listdir(STYLE_MASK_PATH) if file.startswith("style_mask_")]
+            content_masks_path = [os.path.join(CONTENT_MASK_PATH, mask) for mask in content_masks]
+            style_masks_path = [os.path.join(STYLE_MASK_PATH, mask) for mask in style_masks]
+            masks_path += (content_masks_path + style_masks_path)
+
+            log_files(masks_path)
+
+            return render_template(
+                "threshold_masks.html",
+                n=n_threshold,
+                user_defined=str(user_defined_regions),
+                content_masks=sorted(content_masks),
+                style_masks=sorted(style_masks),
+                n_masks=numbers[n_threshold+1]
+                )
+
+        log_files(masks_path)
         
-
-        return render_template("threshold_masks.html", n=n_threshold)
+        return render_template(
+            "threshold_masks.html",
+            n=n_threshold,
+            user_defined=str(user_defined_regions)
+            )
 
 
     elif transfer_option == "colour":
 
         n_colours = int(request.form["n_colours"])
-        write_to_summary_file("N COLOUR: " + str(n_colours))
+        log_text("N COLOUR: " + str(n_colours))
 
         base = int(request.form["base"])
-        write_to_summary_file("BASE: " + "style" if base else "content")
-        
-        colour_segmentor = ColourModel(base=base, n_colours=n_colours)
-        colour_segmentor.segment(target=0)
-        colour_segmentor.segment(target=1)
+        log_text("BASE: " + ("style" if base else "content"))
 
         masks_path = [
-            os.path.join(CONTENT_MASK_PATH, "colour_mask.jpg"),
-            os.path.join(STYLE_MASK_PATH, "colour_mask.jpg")
+            os.path.join(CONTENT_MASK_PATH, "content_colour_mask.jpg"),
+            os.path.join(STYLE_MASK_PATH, "style_colour_mask.jpg")
             ]
 
-        add_summary_files(masks_path, ["content_colour_mask.jpg", "style_colour_mask.jpg"])
+        if user_defined_regions:
+
+            content_segmentor = ColourModel(
+                base=0,
+                n_colours=n_colours,
+                user_defined=user_defined_regions
+                )
+
+            style_segmentor = ColourModel(
+                base=1,
+                n_colours=n_colours,
+                user_defined=user_defined_regions
+            )
+
+            content_segmentor.segment(target=0)
+            style_segmentor.segment(target=1)
+
+            content_masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("content_mask_")]
+            style_masks = [file for file in os.listdir(STYLE_MASK_PATH) if file.startswith("style_mask_")]
+            content_masks_path = [os.path.join(CONTENT_MASK_PATH, mask) for mask in content_masks]
+            style_masks_path = [os.path.join(STYLE_MASK_PATH, mask) for mask in style_masks]
+            masks_path += (content_masks_path + style_masks_path)
+
+            log_files(masks_path)
+
+            return render_template(
+                "colour_masks.html",
+                n=n_colours,
+                user_defined=str(user_defined_regions),
+                content_masks=sorted(content_masks),
+                style_masks=sorted(style_masks),
+                n_masks=numbers[n_colours]
+                )
+
+        else:
+
+            segmentor = ColourModel(
+                base=base,
+                n_colours=n_colours,
+                user_defined=user_defined_regions
+            )
+            
+            segmentor.segment(target=0)
+            segmentor.segment(target=1)
+
+            log_files(masks_path)
         
-        return render_template("colour_masks.html", n=n_colours)
+            return render_template(
+                "colour_masks.html",
+                n=n_colours,
+                user_defined=str(user_defined_regions)
+                )
 
 
 @app.route("/style_transfer", methods =["POST"])
@@ -100,25 +179,63 @@ def style_transfer():
         s_mask = None
         n_colors = 1
 
-        write_to_summary_file("SELECTED REGIONS: " + str(selected_masks))
-        add_summary_files([c_mask])
+        log_text("CONTENT MASK: " + str(selected_masks))
+        log_text("STYLE MASK: none")
+        log_files([c_mask], ["content_combined_mask.jpg"])
     
     elif transfer_option == "threshold":
+        content_masks = request.form.getlist("content_masks")
+        style_masks = request.form.getlist("style_masks")
         n_colors = int(request.form["n_colors"])
-        c_mask = os.path.join(CONTENT_MASK_PATH, "threshold_mask.jpg")
-        s_mask = os.path.join(STYLE_MASK_PATH, "threshold_mask.jpg")
+        if len(content_masks)==0 and len(style_masks)==0:
+            c_mask = os.path.join(CONTENT_MASK_PATH, "content_threshold_mask.jpg")
+            s_mask = os.path.join(STYLE_MASK_PATH, "style_threshold_mask.jpg")
+            log_text("CONTENT MASK: content_threshold_mask.jpg")
+            log_text("STYLE MASK: style_threshold_mask.jpg")
+        else:
+            combine_masks(content_masks, target=0)
+            combine_masks(style_masks, target=1)
+
+            c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
+            s_mask = os.path.join(STYLE_MASK_PATH, "combined_mask.jpg")
+
+            log_text("CONTENT MASK: " + str(content_masks))
+            log_text("STYLE MASK: " + str(style_masks))
+
+            log_files([c_mask], ["content_combined_mask.jpg"])
+            log_files([s_mask], ["style_combined_mask.jpg"])
     
     elif transfer_option == "colour":
+        content_masks = request.form.getlist("content_masks")
+        style_masks = request.form.getlist("style_masks")
         n_colors = int(request.form["n_colors"])
-        c_mask = os.path.join(CONTENT_MASK_PATH, "colour_mask.jpg")
-        s_mask = os.path.join(STYLE_MASK_PATH, "colour_mask.jpg")
+
+        if len(content_masks)==0 and len(style_masks)==0:
+            c_mask = os.path.join(CONTENT_MASK_PATH, "content_colour_mask.jpg")
+            s_mask = os.path.join(STYLE_MASK_PATH, "style_colour_mask.jpg")
+            log_text("CONTENT MASK: content_colour_mask.jpg")
+            log_text("STYLE MASK: style_colour_mask.jpg")
+        else:
+            combine_masks(content_masks, target=0)
+            combine_masks(style_masks, target=1)
+
+            c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
+            s_mask = os.path.join(STYLE_MASK_PATH, "combined_mask.jpg")
+
+            log_text("CONTENT MASK: " + str(content_masks))
+            log_text("STYLE MASK: " + str(style_masks))
+
+            log_files([c_mask], ["content_combined_mask.jpg"])
+            log_files([s_mask], ["style_combined_mask.jpg"])
+
 
     hard_width = False
 
     model = TransferModel(n_colors, hard_width, c_mask, s_mask)
     model.apply_transfer()
 
-    add_summary_files([OUTPUT_IMAGE_PATH])
+    log_files([OUTPUT_IMAGE_PATH])
+    log_text("OUTPUT: output.jpg")
     
     return render_template("output.html", image="output.jpg")
 
@@ -130,7 +247,7 @@ def full_transfer():
     s_mask = None
     model = TransferModel(1, False, c_mask, s_mask)
     model.apply_transfer()
-    add_summary_files([OUTPUT_IMAGE_PATH])
+    log_files([OUTPUT_IMAGE_PATH])
     return render_template("output.html", image="output.jpg")
 
 

@@ -79,8 +79,8 @@
 
         <form class="ui form" id="style-form" action="{{ url_for('style_transfer')}}"
             method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="type" value="semantic">
         <div class="ui four column very relaxed grid">
-                <input type="hidden" name="type" value="semantic">
                 {% for mask in masks %}
                 {% set region = mask.split('_')[1].split('.')[0] %}
                 <div class="column">

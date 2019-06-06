@@ -31,7 +31,7 @@ def cleanup():
    
 
 
-def add_summary_files(files, names=None):
+def log_files(files, names=None):
    """ Produces a summary folder with containing all the experiment details about the style transfer.
    
    Arguments:
@@ -45,7 +45,7 @@ def add_summary_files(files, names=None):
       copy(file, os.path.join(SUMMARY_PATH, name))
 
 
-def write_to_summary_file(text):
+def log_text(text):
 
    with open(SUMMARY_FILE_PATH, "a+") as f:
       f.write(text +'\n')

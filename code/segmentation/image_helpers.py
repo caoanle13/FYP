@@ -87,8 +87,29 @@ def combine_masks(filenames, target):
 
     for filename in filenames:
 
-        temp = skimage.io.imread(os.path.join(CONTENT_MASK_PATH, filename))
+        temp = skimage.io.imread(os.path.join(MASK_DIR, filename))
         mask = mask | temp
+    
+    SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
+    skimage.io.imsave(SAVE_PATH, mask)
+
+
+def combine_coloured_masks(filenames, target):
+
+    MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+    
+    h = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
+    w = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
+    
+    mask = np.zeros([h,w,3],dtype=np.uint8)
+
+    for filename in filenames:
+
+        temp = skimage.io.imread(os.path.join(MASK_DIR, filename))
+        temp = temp != 0
+        mask = mask | temp
+    
+    mask *= 255
     
     SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
     skimage.io.imsave(SAVE_PATH, mask)

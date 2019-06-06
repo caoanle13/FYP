@@ -31,15 +31,19 @@ function dispExtraOptions() {
     var selected = e.options[e.selectedIndex].value;
     var thresholdOption = document.getElementById("threshold_option");
     var colourOption = document.getElementById("colour_option");
+    var regionOption = document.getElementById("region_option")
     if (selected === "threshold") {
         thresholdOption.style.display="inline";
         colourOption.style.display="none";
+        regionOption.style.display="inline";
     } else if (selected === "colour") {
         thresholdOption.style.display="none";
         colourOption.style.display="inline";
+        regionOption.style.display="inline";
     } else {
         thresholdOption.style.display = "none";
         colourOption.style.display = "none";
+        regionOption.style.display="none";
     }
 
 }
