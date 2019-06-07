@@ -9,6 +9,7 @@ import imageio
 from scipy.cluster.vq import whiten, kmeans
 from scipy.spatial.distance import euclidean
 from itertools import repeat
+import multiprocessing
 
 sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
@@ -411,14 +412,11 @@ class ColourModel():
         output_image = np.empty(image.shape)
         
         # Replace every pixel by the nearest neighbor in the dominant colours
-
-        output_image = list(
-                            map(
-                                self.closest_row,
-                                [x[0] for x in np.split(image, image.shape[0])]
-                            )
-                        )
-        
+        with multiprocessing.Pool() as pool:
+            output_image = pool.map(
+                self.closest_row,
+                [x[0] for x in np.split(image, image.shape[0])]
+            )
 
         
         # Save output
