@@ -8,6 +8,7 @@ from paths import *
 import imageio
 from scipy.cluster.vq import whiten, kmeans
 from scipy.spatial.distance import euclidean
+from itertools import repeat
 
 sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
@@ -374,6 +375,26 @@ class ColourModel():
         return masks
 
 
+
+    def closest(self, point, others):
+        """ Given a point and a group of other points, finds the minimum distance pair.
+        
+        Arguments:
+            point {} -- Test point.
+            others {iterator} -- Group of points.
+        
+        Returns:
+            point -- The point among the group of points that has the minimum distance to the test point.
+        """
+        return min(others, key = lambda i: euclidean(point, i))
+
+
+
+    def closest_row(self, row):
+        return list( map(self.closest, row, repeat(self.dom_cols)) )
+
+
+
     def segment(self, target):
         """ Function to perform colour-based segmentation.
         
@@ -390,16 +411,14 @@ class ColourModel():
         output_image = np.empty(image.shape)
         
         # Replace every pixel by the nearest neighbor in the dominant colours
-        for i, row in enumerate(image):
-            for j, pix in enumerate(row):
-                out_colour = self.dom_cols[0]
-                min_dist = euclidean(pix, out_colour)
-                for colour in self.dom_cols:
-                    temp = euclidean(pix, colour)
-                    if temp < min_dist:
-                        min_dist  = temp
-                        out_colour = colour
-                output_image[i][j] = out_colour
+
+        output_image = list(
+                            map(
+                                self.closest_row,
+                                [x[0] for x in np.split(image, image.shape[0])]
+                            )
+                        )
+        
 
         
         # Save output
