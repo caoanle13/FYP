@@ -15,7 +15,7 @@ sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
 # Dict containing train ID to RGB colour mappings
 from libs.constants import CITYSCAPES_LABEL_COLORS, CITYSCAPES_LABEL_NAMES
-from image_helpers import array_to_pil, boolean_to_pil, superimpose, equalize
+from image_helpers import array_to_pil, boolean_to_pil, superimpose, equalize, get_colour_name
 
 
 
@@ -365,6 +365,7 @@ class ColourModel():
         
         Arguments:
             - image {nd array}: numpy array containing colours for individual regions.
+            - colours {list}: list of colours.
         Returns:
             {list}: list of masks which are boolean numpy arrays (1 mask per class label).
         """
@@ -413,10 +414,10 @@ class ColourModel():
         
         # Replace every pixel by the nearest neighbor in the dominant colours
         with multiprocessing.Pool() as pool:
-            output_image = pool.map(
+            output_image = np.array(pool.map(
                 self.closest_row,
                 [x[0] for x in np.split(image, image.shape[0])]
-            )
+            ))
 
         
         # Save output
@@ -433,7 +434,7 @@ class ColourModel():
             # Save them as PIL images
             for mask, color in zip(masks, self.dom_cols):
                 mask = array_to_pil(mask)
-                mask.save(SAVE_DIR + mask_type + "_mask_" + str(color) + ".jpg")
+                mask.save(SAVE_DIR + mask_type + "_mask_" + get_colour_name(color)[1] + ".jpg")
 
 
 if __name__ == "__main__":

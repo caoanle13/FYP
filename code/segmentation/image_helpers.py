@@ -6,7 +6,8 @@ from PIL import Image, ImageOps
 import numpy as np
 from paths import *
 import os
-import skimage
+from skimage import io
+import webcolors
 
 
 
@@ -80,36 +81,56 @@ def combine_masks(filenames, target):
    
     MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
     
-    h = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
-    w = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
+    h = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
+    w = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
     
     mask = np.zeros([h,w,3],dtype=np.uint8)
 
     for filename in filenames:
 
-        temp = skimage.io.imread(os.path.join(MASK_DIR, filename))
+        temp = io.imread(os.path.join(MASK_DIR, filename))
         mask = mask | temp
     
     SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
-    skimage.io.imsave(SAVE_PATH, mask)
+    io.imsave(SAVE_PATH, mask)
 
 
 def combine_coloured_masks(filenames, target):
 
     MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
     
-    h = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
-    w = skimage.io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
+    h = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
+    w = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
     
     mask = np.zeros([h,w,3],dtype=np.uint8)
 
     for filename in filenames:
 
-        temp = skimage.io.imread(os.path.join(MASK_DIR, filename))
+        temp = io.imread(os.path.join(MASK_DIR, filename))
         temp = temp != 0
         mask = mask | temp
     
     mask *= 255
     
     SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
-    skimage.io.imsave(SAVE_PATH, mask)
+    io.imsave(SAVE_PATH, mask)
+
+
+def closest_colour(rgb):
+    min_colours = {}
+    for key, name in webcolors.css3_hex_to_names.items():
+        r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+        rd = (r_c - rgb[0]) ** 2
+        gd = (g_c - rgb[1]) ** 2
+        bd = (b_c - rgb[2]) ** 2
+        min_colours[(rd + gd + bd)] = name
+    return min_colours[min(min_colours.keys())]
+
+
+def get_colour_name(requested_colour):
+    try:
+        closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
+    except ValueError:
+        closest_name = closest_colour(requested_colour)
+        actual_name = None
+    return actual_name, closest_name
