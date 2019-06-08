@@ -14,7 +14,7 @@ import multiprocessing
 sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
 # Dict containing train ID to RGB colour mappings
-from libs.constants import CITYSCAPES_LABEL_COLORS, CITYSCAPES_LABEL_NAMES
+from city_constants import CITYSCAPES_LABEL_COLORS, CITYSCAPES_LABEL_NAMES
 from image_helpers import array_to_pil, boolean_to_pil, superimpose, equalize, get_colour_name
 
 
@@ -163,10 +163,10 @@ class SemanticModel():
         # Save them as PIL images
         for i, mask in enumerate(masks):
             mask = mask[:,:,0]
-            #if np.sum(mask) * 10 > mask.size: # Making sure the region covers at least a 10th of the image area
-            mask = boolean_to_pil(mask)
-            mask = mask.resize(input_size)
-            mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
+            if np.sum(mask) * 10 > mask.size: # Making sure the region covers at least a 10th of the image area
+                mask = boolean_to_pil(mask)
+                mask = mask.resize(input_size)
+                mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
 
         # Superimpose the image and its mask
         superimposed_image = superimpose(image, rgb_segmentation_mask)
