@@ -116,32 +116,61 @@
                             <option value="semantic">Semantic Style Transfer</option>
                             <option value="colour">Colour Style Transfer</option>
                             <option value="threshold">Threshold Style Transfer</option>
-                        </select><br>
+                        </select>
+
+                        <div class="ui popup">
+                            <div class="header"> Rating</div>
+                            <div class="ui star rating" data-rating="3"></div>
+                        </div>
 
 
+                        <div class="ui toggle checkbox" id="region_option">
+                            <div class="ui horizontal divider">
+                                <i class="map marker alternate icon"></i>
+                            </div>
+                            <div class="ui segment">
+                                <input type="checkbox" name="region_toggle" id="region_toggle" onchange="toggleBaseOption()">
+                                <label for="region_toggle">
+                                    Toggle the button if you wish to define allowed regions yourself.
+                                </label>
+                            </div>
+                        </div>
+
+                        
                         <div id="colour_option">
-                            <input type="range" id="n_colours" name="n_colours" min="2" max="5" value="4"
+                            <div class="ui horizontal divider">
+                                <i class="paint brush icon"></i>
+                            </div>
+                            <input class="ui range" type="range" id="n_colours" name="n_colours" min="2" max="5" value="4"
                                 onchange="colourSliderCallback(this)"><br>
 
-                            <label for="n_colours">Number of colours:
+                            <label for="n_colours"> Number of colours:
                                 <span id="n_colours_label"></span>
                             </label><br><br>
 
-                            <input type="radio" name="base" value="0"> Content Image <br>
-                            <input type="radio" name="base" value="1"> Style Image <br><br>
+                            <div id="base_option">
+                            <div class="ui horizontal divider">
+                                <i class="expand icon"></i>
+                            </div>
+                                <p>Choose <strong>base</strong> image for the colour segmentation.</p>
+                                <input type="radio" name="base" value="0"> Content Image <br>
+                                <input type="radio" name="base" value="1"> Style Image <br><br>
+                            </div>
                         </div>
 
 
                         <div id="threshold_option">
+                            <div class="ui horizontal divider">
+                                <i class="cut icon"></i>
+                            </div>
                             <input type="range" id="n_threshold" name="n_threshold" min="1" max="4" value="1"
                                 onchange="thresholdSliderCallback(this)"><br>
                             <label for="n_threshold">Number of threshold(s): <span id="n_threshold_label"></span>
                             </label><br><br>
                         </div>
-                        
-                        <div class="ui toggle checkbox" id="region_option">
-                            <input type="checkbox" name="region_toggle" id="region_toggle">
-                            <label for="region_toggle">Toggle the button if you wish to define allowed regions yourself.</label>
+
+                        <div class="ui horizontal divider">
+                            <i class="angle double down icon"></i>
                         </div>
 
                         <button class="ui button" type="submit">Start Processing</button>

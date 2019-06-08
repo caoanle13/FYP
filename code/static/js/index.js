@@ -107,4 +107,13 @@ function activateLoader() {
 
 
 
+function toggleBaseOption(){
+    let baseOption = document.getElementById("base_option");
+    let isNone = baseOption.style.display === "none"
+    baseOption.style.display = isNone ? "" : "none";
+}
+
+
+
+
 init();

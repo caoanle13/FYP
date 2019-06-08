@@ -104,8 +104,9 @@ def masks():
         n_colours = int(request.form["n_colours"])
         log_text("N COLOUR: " + str(n_colours))
 
-        base = int(request.form["base"])
-        log_text("BASE: " + ("style" if base else "content"))
+        if not user_defined_regions:
+            base = int(request.form["base"])
+            log_text("BASE: " + ("style" if base else "content"))
 
         masks_path = [
             os.path.join(CONTENT_MASK_PATH, "content_colour_mask.jpg"),
@@ -120,13 +121,14 @@ def masks():
                 user_defined=user_defined_regions
                 )
 
+            content_segmentor.segment(target=0)
+
             style_segmentor = ColourModel(
                 base=1,
                 n_colours=n_colours,
                 user_defined=user_defined_regions
             )
-
-            content_segmentor.segment(target=0)
+            
             style_segmentor.segment(target=1)
 
             content_masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("content_mask_")]
