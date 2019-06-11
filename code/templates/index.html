@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- Menu header bar -->
+    <!---------- Menu header bar ---------->
 
     <div class="ui brown secondary pointing huge inverted menu" id="navbar">
             <a href="{{ url_for('index')}}" class="active item">
@@ -46,15 +46,15 @@
     </div><br>
 
 
+    <!---------- Main Container ---------->
     <div class="ui center aligned container main">
 
         <h1><i class="camera retro icon"></i>
             <strong>Style Transfer App</strong></h1><br>
 
-
+        <!---------- Main Form ---------->
         <div class="ui form">
-            <form id="image-form" action="{{ url_for('masks')}}" method="POST" enctype="multipart/form-data"
-                onsubmit="return validate(this);">
+            <form id="image-form" action="{{ url_for('masks')}}" method="POST" enctype="multipart/form-data">
 
 
                 <h4 class="ui horizontal divider header">
@@ -64,30 +64,32 @@
 
                 <div class="ui segment">
                     <div class="ui two column very relaxed grid">
-
+                        
+                        <!---------- Content Image ---------->
                         <div class="column">
                             <h5>Content Image</h5>
 
-                            <label for="hidden-content-image" class="ui icon button">
+                            <label for="hidden-content-image" class="ui brown icon button">
                                 <i class="file image outline icon"></i>
                                 <small>Choose file</small>
                             </label>
-                            <input type="file" id="hidden-content-image" onchange="previewContentImage()"
+                            <input type="file" id="hidden-content-image"
                                 name="content_image" accept="image/*" style="display:none" required><br><br>
 
                             <img class="ui centered medium bordered image" id="content-image" src="" height="200"
                                 style="display:none">
 
                         </div>
-
+                        
+                        <!---------- Style Image ---------->
                         <div class="column">
                             <h5>Style Image</h5>
 
-                            <label for="hidden-style-image" class="ui icon button">
+                            <label for="hidden-style-image" class="ui brown icon button">
                                 <i class="file image outline icon"></i>
                                 <small>Choose file</small>
                             </label>
-                            <input type="file" id="hidden-style-image" onchange="previewStyleImage()"
+                            <input type="file" id="hidden-style-image"
                                 name="style_image" accept="image/*" style="display:none" required> <br><br>
                             <img class="ui centered medium bordered image" id="style-image" src="" height="200"
                                 style="display:none">
@@ -101,6 +103,8 @@
                     </div>
                 </div><br>
 
+
+                <!---------- Second Part of the Form ---------->
                 <h4 class="ui horizontal divider header">
                     <i class="tag icon"></i>
                     Transfer Type
@@ -110,7 +114,8 @@
                     <div class="ui segment">
                         <h5>Select the type of transfer to execute</h5>
 
-                        <select class="ui dropdown" name="transfer-option" onchange="dispExtraOptions()"
+                        <!---------- Transfer Options ---------->
+                        <select class="ui dropdown" name="transfer-option"
                             id="transfer_select">
                             <option value="full" selected="selected">Full Style Transfer</option>
                             <option value="semantic">Semantic Style Transfer</option>
@@ -118,31 +123,25 @@
                             <option value="threshold">Threshold Style Transfer</option>
                         </select>
 
-                        <div class="ui popup">
-                            <div class="header"> Rating</div>
-                            <div class="ui star rating" data-rating="3"></div>
-                        </div>
-
-
+                        <!---------- User-defined Region Option ---------->
                         <div class="ui toggle checkbox" id="region_option">
                             <div class="ui horizontal divider">
                                 <i class="map marker alternate icon"></i>
                             </div>
                             <div class="ui segment">
-                                <input type="checkbox" name="region_toggle" id="region_toggle" onchange="toggleBaseOption()">
+                                <input type="checkbox" name="region_toggle" id="region_toggle">
                                 <label for="region_toggle">
                                     Toggle the button if you wish to define allowed regions yourself.
                                 </label>
                             </div>
                         </div>
 
-                        
+                        <!---------- Colour Option ---------->                        
                         <div id="colour_option">
                             <div class="ui horizontal divider">
                                 <i class="paint brush icon"></i>
                             </div>
-                            <input class="ui range" type="range" id="n_colours" name="n_colours" min="2" max="5" value="4"
-                                onchange="colourSliderCallback(this)"><br>
+                            <input class="ui range" type="range" id="n_colours" name="n_colours" min="2" max="5" value="4"><br>
 
                             <label for="n_colours"> Number of colours:
                                 <span id="n_colours_label"></span>
@@ -158,13 +157,12 @@
                             </div>
                         </div>
 
-
+                        <!---------- Threshold Option ---------->
                         <div id="threshold_option">
                             <div class="ui horizontal divider">
                                 <i class="cut icon"></i>
                             </div>
-                            <input type="range" id="n_threshold" name="n_threshold" min="1" max="4" value="1"
-                                onchange="thresholdSliderCallback(this)"><br>
+                            <input type="range" id="n_threshold" name="n_threshold" min="1" max="4" value="1"><br>
                             <label for="n_threshold">Number of threshold(s): <span id="n_threshold_label"></span>
                             </label><br><br>
                         </div>
@@ -173,7 +171,7 @@
                             <i class="angle double down icon"></i>
                         </div>
 
-                        <button class="ui button" type="submit">Start Processing</button>
+                        <button class="ui brown button" type="submit">Start Processing</button>
                     </div>
                 </div>
             </form>

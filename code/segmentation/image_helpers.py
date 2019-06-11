@@ -96,6 +96,12 @@ def combine_masks(filenames, target):
 
 
 def combine_coloured_masks(filenames, target):
+    """ Function to combine different single coloured mask into one multiple coloured mask
+    
+    Arguments:
+        filenames {list} -- List of file names.
+        target {int} -- 0 for content, 1 for style.
+    """
 
     MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
     
@@ -128,6 +134,14 @@ def closest_colour(rgb):
 
 
 def get_colour_name(requested_colour):
+    """ Function that returns a colour name given an rgb value.
+    
+    Arguments:
+        requested_colour {iterator} -- RGB value of the colour.
+    
+    Returns:
+        tuple -- The name of the identified colour.
+    """
     try:
         closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
     except ValueError:

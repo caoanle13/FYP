@@ -1,119 +1,93 @@
-function init(){
-    document.getElementById("n_colours_label").innerText = "4";
-    document.getElementById("n_threshold_label").innerText = "1";
-}
+document.getElementById("n_colours_label").innerText = "4";
+document.getElementById("n_threshold_label").innerText = "1";
 
-function validate(form) {
-    var content = form.elements[0];
-    var style = form.elements[1];
-    var select = form.elements[2];
-    var options = select.options;
 
+// Event handler for form validation
+let form = document.getElementById("image-form");
+form.addEventListener("submit", function () {
+
+    console.log("form validation!");
+
+    let content = this.elements[0];
+    let style = this.elements[1];
+    let selectMenu = this.elements[2];
+    let options = selectMenu.options;
+    let selected = options[options.selectedIndex].value;
+    let loader = document.getElementById("segmentation_loader");
+
+    // Check content image field
     if (content.value === "") {
         alert("Please upload a content image.");
         return false;
     }
+    // Check style image field
     else if (style.value === "") {
         alert("Please upload a style image as well.");
         return false;
     }
-    else if (options.selectedIndex === 0) {
-        if (!confirm("Perform style transfer without any guidance mask?")){
+    // Ask for confirmation on full style transfer
+    else if (selected === "full") {
+        if (!confirm("Perform style transfer without any guidance mask?")) {
             return false;
+        } else {
+            // Activate loader for full style transfer
+            loader.innerText = 'Performing full style transfer...';
+            return true;
         }
     }
-    activateLoader();
-}
-
-
-function dispExtraOptions() {
-    var e = document.getElementById("transfer_select");
-    var selected = e.options[e.selectedIndex].value;
-    var thresholdOption = document.getElementById("threshold_option");
-    var colourOption = document.getElementById("colour_option");
-    var regionOption = document.getElementById("region_option")
-    if (selected === "threshold") {
-        thresholdOption.style.display="inline";
-        colourOption.style.display="none";
-        regionOption.style.display="inline";
-    } else if (selected === "colour") {
-        thresholdOption.style.display="none";
-        colourOption.style.display="inline";
-        regionOption.style.display="inline";
-    } else {
-        thresholdOption.style.display = "none";
-        colourOption.style.display = "none";
-        regionOption.style.display="none";
-    }
-
-}
-
-
-function colourSliderCallback(slider) {
-    document.getElementById("n_colours_label").innerText = slider.value;
-}
-
-function thresholdSliderCallback(slider) {
-    document.getElementById("n_threshold_label").innerText = slider.value;
-}
-
-
-function previewContentImage() {
-    var preview = document.querySelector('img#content-image');
-    var file = document.querySelector('input#hidden-content-image').files[0];
-    var reader = new FileReader();
-
-    reader.addEventListener("load", function () {
-        preview.style.display = 'block';
-        preview.src = reader.result;
-    }, false);
-
-    if (file) {
-        reader.readAsDataURL(file);
-    }
-}
-
-function previewStyleImage() {
-    var preview = document.querySelector('img#style-image');
-    var file = document.querySelector('input#hidden-style-image').files[0];
-    var reader = new FileReader();
-
-
-    reader.addEventListener("load", function () {
-        preview.style.display = 'block';
-        preview.src = reader.result;
-    }, false);
-
-    if (file) {
-        reader.readAsDataURL(file);
-    }
-}
-
-function activateLoader() {
-    
-    var loader = document.getElementById("segmentation_loader");
-
-    var e = document.getElementById("transfer_select");
-    var selected = e.options[e.selectedIndex].value;
-
-    if (selected !== 'full') {
-        loader.innerText = 'Performing ' + selected + ' segmentation...';
-    } else {
-        loader.innerText = 'Performing full style transfer...';
-    }
-
+    // If everything correct, create and show loader
+    loader.innerText = 'Performing ' + selected + ' segmentation...';
     $('.ui.basic.modal').modal('show');
+    return true;
+
+});
+
+
+// Event handler on input images to display them
+function previewImage(type) {
+    let preview = document.querySelector(`img#${type}-image`);
+    let file = document.querySelector(`input#hidden-${type}-image`).files[0];
+    let reader = new FileReader();
+
+    reader.addEventListener("load", () => {
+        preview.style.display = 'block';
+        preview.src = reader.result;
+    }, false);
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
 }
+let contentImage = document.getElementById("hidden-content-image");
+let styleImage = document.getElementById("hidden-style-image");
+contentImage.addEventListener("change", () => { previewImage("content");});
+styleImage.addEventListener("change", () => { previewImage("style");});
 
 
+// Event handler to display extra options depending on the menu selection
+let selectMenu = document.getElementById("transfer_select");
+selectMenu.addEventListener("change", function () {
 
-function toggleBaseOption(){
-    let baseOption = document.getElementById("base_option");
-    let isNone = baseOption.style.display === "none"
-    baseOption.style.display = isNone ? "" : "none";
+    document.getElementById("threshold_option").style.display = "none";
+    document.getElementById("colour_option").style.display = "none";
+    document.getElementById("region_option").style.display = "none";
+
+;
+    let selected = this.options[this.selectedIndex].value;
+    if (selected === "threshold" || selected === "colour"){
+        document.getElementById(`${selected}_option`).style.display = "inline";
+        document.getElementById("region_option").style.display = "inline";
+    }
+
+});
+
+// Event handler for slider changes
+function sliderHandler(type) {
+    let slider = document.getElementById(`n_${type}`)
+    let label = document.getElementById(`n_${type}_label`);
+    label.innerText = slider.value;
 }
-
-
-
-
-init();
+let colourSlider = document.getElementById("n_colours");
+let thresholdSlider = document.getElementById("n_threshold");
+colourSlider.addEventListener("change", () => { sliderHandler("colours")});
+thresholdSlider.addEventListener("change", () => { sliderHandler("threshold")});
