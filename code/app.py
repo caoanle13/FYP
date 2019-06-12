@@ -1,12 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file
 import os
 import shutil
+from PIL import Image
 from segmentation.models import SemanticModel, ThresholdModel, ColourModel
 from segmentation.image_helpers import combine_masks
 from paths import *
 from structure import cleanup, log_files, log_text, produce_zip
 from stylisation.style_transfer_model import TransferModel
 from constants import numbers
+from preprocessing.preprocessing import match_histogram
+
 
 app = Flask(__name__)
 
@@ -33,13 +36,20 @@ def masks():
 
     transfer_option = request.form["transfer-option"]
     user_defined_regions = request.form.get('region_toggle') == "on"
+    preserve_content_palette = request.form.get('preserve_content_palette') == "on"
 
     # Log form input to summary directory
     log_text("CONTENT: " + content_image.filename)
     log_text("STYLE: " + style_image.filename) 
+    log_text("PRESERVE CONTENT PALETTE: " + str(preserve_content_palette))
     log_text("OPTION: " + transfer_option)
     log_text("USER DEFINED REGION: " + str(user_defined_regions))
     log_files([CONTENT_IMAGE_PATH, STYLE_IMAGE_PATH])
+
+    if preserve_content_palette:
+        matched_image = match_histogram(STYLE_IMAGE_PATH, CONTENT_IMAGE_PATH)
+        matched_image.save(STYLE_IMAGE_PATH)
+        
 
     # Full style transfer
     if transfer_option == "full":

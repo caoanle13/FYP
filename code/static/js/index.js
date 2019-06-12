@@ -6,11 +6,10 @@ document.getElementById("n_threshold_label").innerText = "1";
 let form = document.getElementById("image-form");
 form.addEventListener("submit", function () {
 
-    console.log("form validation!");
 
     let content = this.elements[0];
     let style = this.elements[1];
-    let selectMenu = this.elements[2];
+    let selectMenu = this.elements[3];
     let options = selectMenu.options;
     let selected = options[options.selectedIndex].value;
     let loader = document.getElementById("segmentation_loader");
