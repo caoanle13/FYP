@@ -117,11 +117,12 @@ class SemanticModel():
 
 
 
-    def produce_masks(self, image):
+    def produce_masks(self, image, origin_image):
         """ Helper function to produce separate masks from segmentation mask with IDs.
         
         Arguments:
             - image {nd array}: numpy array containing IDs for individual labels.
+            - origin_imgae {nd array}: numpy array of the original image.
         Returns:
             {list}: list of masks which are boolean numpy arrays (1 mask per class label).
         """
@@ -129,7 +130,9 @@ class SemanticModel():
         masks = []
         image = np.squeeze(image, axis=0)
         for i in range(self.NUM_CLASSES):
-            masks.append(image == i)
+            selection = (image == i)
+            mask = np.multiply(selection, origin_image)
+            masks.append(mask)
         return masks
 
 
@@ -158,13 +161,13 @@ class SemanticModel():
         rgb_segmentation_mask.save(self.SAVE_DIR +  "segmentation_mask.jpg")
         
         # Produce individual masks for each label
-        masks = self.produce_masks(segmentation_mask)
+        masks = self.produce_masks(segmentation_mask, np.array(image.resize((2049, 1025))))
 
         # Save them as PIL images
         for i, mask in enumerate(masks):
-            mask = mask[:,:,0]
-            if np.sum(mask) * 10 > mask.size: # Making sure the region covers at least a 10th of the image area
-                mask = boolean_to_pil(mask)
+            #if np.sum(mask) * 15 > mask.size: # Making sure the region covers at least a 15th of the image area
+            if mask.any(axis=-1).sum() * 15 > mask.size/3:
+                mask = array_to_pil(mask)
                 mask = mask.resize(input_size)
                 mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
 

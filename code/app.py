@@ -49,6 +49,7 @@ def masks():
     if preserve_content_palette:
         matched_image = match_histogram(STYLE_IMAGE_PATH, CONTENT_IMAGE_PATH)
         matched_image.save(STYLE_IMAGE_PATH)
+        log_files([STYLE_IMAGE_PATH], ["matched_style_image.jpg"])
         
 
     # Full style transfer
@@ -73,6 +74,12 @@ def masks():
         # Get number of thresholds and log it to summary file
         n_threshold = int(request.form["n_threshold"])
         log_text("N THRESHOLD: " + str(n_threshold))
+
+        # Paths to segmented content and style images
+        masks_path = [
+            os.path.join(CONTENT_MASK_PATH, "content_threshold_mask.jpg"),
+            os.path.join(STYLE_MASK_PATH, "style_threshold_mask.jpg")
+        ]
         
         # Perform threhsold segmentation on content and style images
         content_segmentor = ThresholdModel(
@@ -92,12 +99,6 @@ def masks():
 
         # Automatic region pairing
         if not user_defined_regions:
-
-            # Paths to segmented content and style images
-            masks_path = [
-                os.path.join(CONTENT_MASK_PATH, "content_threshold_mask.jpg"),
-                os.path.join(STYLE_MASK_PATH, "style_threshold_mask.jpg")
-            ]
 
             # Add files to summary directory
             log_files(masks_path)
@@ -220,7 +221,7 @@ def style_transfer():
         # Get selected regions and form final transfer mask
         form = request.form.to_dict(flat=False)
         selected_masks = [x for x in list(form) if x != "type"]
-        combine_masks(selected_masks, target=0)
+        combine_coloured_masks(selected_masks, target=0)
 
         # Parameters of Style Transfer Model
         c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg") # newly formed mask
@@ -276,8 +277,8 @@ def style_transfer():
             log_text("STYLE MASK: style_colour_mask.jpg")
         # User defined regions -> n_colors = 1
         else:
-            combine_masks(content_masks, target=0)
-            combine_masks(style_masks, target=1)
+            combine_coloured_masks(content_masks, target=0)
+            combine_coloured_masks(style_masks, target=1)
 
             c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
             s_mask = os.path.join(STYLE_MASK_PATH, "combined_mask.jpg")

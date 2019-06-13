@@ -12,7 +12,6 @@ mask_normalization_type = 'square_sum' # options: ['square_sum', 'sum'], How to 
 content_weight = 1. # Content loss weight
 style_weight = 0.2 # style loss weight
 tv_weight = 0. # Total variation loss weight
-optimizer = 'lbfgs' # options: ['lbfgs', 'adam']
 learning_rate = 10. # learning rate for adam optimizer
 iteration = 800 # max iteration of training
 log_iteration = 10 # Number of iterations to print loss. For adam, also save intermediate result. For L-BFGS, don\'t larger than 10
