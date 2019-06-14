@@ -193,7 +193,7 @@ def masks():
             content_masks = get_masks(0)
             style_masks = get_masks(1)
             content_masks_path = get_paths(CONTENT_MASK_PATH, content_masks)
-            style_masks_path = [get_paths(STYLE_MASK_PATH, style_masks)
+            style_masks_path = get_paths(STYLE_MASK_PATH, style_masks)
             masks_path += (content_masks_path + style_masks_path)
 
             # Add files to summary directory
