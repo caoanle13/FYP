@@ -21,3 +21,4 @@ code/segmentation/.DS_Store
 code/segmentation/.ipynb_checkpoints/
 code/samples/.DS_Store
 code/__pycache__
+code/preprocessing/__pycache__

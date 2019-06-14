@@ -82,11 +82,11 @@
             <input type="hidden" name="type" value="semantic">
         <div class="ui four column very relaxed grid">
                 {% for mask in masks %}
-                {% set region = mask.split('_')[1].split('.')[0] %}
+                {% set region = mask.split('_')[2].split('.')[0] %}
                 <div class="column">
                     <div class="ui label">
                         <i class="mail icon"></i> {{region}}
-                        <input type="checkbox" id="{{mask}}" name="{{mask}}"/>
+                        <input type="checkbox" name="content_masks" value="{{mask}}"/>
                     </div>
                     <label for="{{mask}}">
                         <img class="ui image" src="static/masks/content/{{mask}}"/>

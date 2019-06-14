@@ -51,7 +51,7 @@
 
 
     
-    <!-- Container for Threshold Segmentation Output -->
+    <!-- Container for Colour Segmentation Output -->
 
     <div class="ui center aligned container main">
             <h2><i class="compress icon"></i>
@@ -105,7 +105,7 @@
                         method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="type" value="colour">
                 
-                        {% if  user_defined == 'False' %}
+                    {% if  user_defined == 'False' %}
                         </p><strong>
                             Content and Style images have been segmented into <span>{{n}}</span> regions and style transfer will occur where appropriate. 
                         </strong> 

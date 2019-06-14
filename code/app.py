@@ -5,7 +5,7 @@ from PIL import Image
 from segmentation.models import SemanticModel, ThresholdModel, ColourModel
 from segmentation.image_helpers import combine_masks
 from paths import *
-from structure import cleanup, log_files, log_text, produce_zip
+from structure import *
 from stylisation.style_transfer_model import TransferModel
 from constants import numbers
 from preprocessing.preprocessing import match_histogram
@@ -60,9 +60,8 @@ def masks():
     elif transfer_option == "semantic":
         content_segmentor = SemanticModel(0)
         content_segmentor.segment(path=CONTENT_IMAGE_PATH)
-        masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("mask_")]
-
-        masks_path = [os.path.join(CONTENT_MASK_PATH, mask) for mask in masks]
+        masks = get_masks(0)
+        masks_path = get_paths(CONTENT_MASK_PATH, masks)
         log_files(masks_path)
 
         return render_template("semantic_masks.html", masks=masks)
@@ -113,10 +112,10 @@ def masks():
         else:
 
             # Get paths for all the individual masks
-            content_masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("content_mask_")]
-            style_masks = [file for file in os.listdir(STYLE_MASK_PATH) if file.startswith("style_mask_")]
-            content_masks_path = [os.path.join(CONTENT_MASK_PATH, mask) for mask in content_masks]
-            style_masks_path = [os.path.join(STYLE_MASK_PATH, mask) for mask in style_masks]
+            content_masks = get_masks(0)
+            style_masks = get_masks(1)
+            content_masks_path = get_paths(CONTENT_MASK_PATH, content_masks)
+            style_masks_path = get_paths(STYLE_MASK_PATH, style_masks)
             masks_path += (content_masks_path + style_masks_path)
 
             # Add files to summary directory
@@ -191,10 +190,10 @@ def masks():
             style_segmentor.segment(target=1)
 
             # Get paths for all the individual masks
-            content_masks = [file for file in os.listdir(CONTENT_MASK_PATH) if file.startswith("content_mask_")]
-            style_masks = [file for file in os.listdir(STYLE_MASK_PATH) if file.startswith("style_mask_")]
-            content_masks_path = [os.path.join(CONTENT_MASK_PATH, mask) for mask in content_masks]
-            style_masks_path = [os.path.join(STYLE_MASK_PATH, mask) for mask in style_masks]
+            content_masks = get_masks(0)
+            style_masks = get_masks(1)
+            content_masks_path = get_paths(CONTENT_MASK_PATH, content_masks)
+            style_masks_path = [get_paths(STYLE_MASK_PATH, style_masks)
             masks_path += (content_masks_path + style_masks_path)
 
             # Add files to summary directory
@@ -218,20 +217,19 @@ def style_transfer():
     
     # Semantic style transfer
     if transfer_option == "semantic":
-        # Get selected regions and form final transfer mask
-        form = request.form.to_dict(flat=False)
-        selected_masks = [x for x in list(form) if x != "type"]
-        combine_coloured_masks(selected_masks, target=0)
+        selected_masks = request.form.getlist("content_masks")
+        selected_npy = to_npy_str(selected_masks)
+        combine_masks(selected_npy, target=0)
 
         # Parameters of Style Transfer Model
-        c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg") # newly formed mask
+        c_mask = CONTENT_COMBINED_MASK_PATH # newly formed mask
         s_mask = None # no style mask
         n_colors = 1 # style components transfered to white region of content mask
 
         # Log transfer parameters
         log_text("CONTENT MASK: " + str(selected_masks))
         log_text("STYLE MASK: none")
-        log_files([c_mask], ["content_combined_mask.jpg"])
+        log_files([c_mask])
     
 
     # Threshold Style Transfer
@@ -242,25 +240,24 @@ def style_transfer():
         n_colors = int(request.form["n_colors"])
         # Automatic pairing -> n_colors = n_colors
         if len(content_masks)==0 and len(style_masks)==0:
-            c_mask = os.path.join(CONTENT_MASK_PATH, "content_threshold_mask.jpg")
-            s_mask = os.path.join(STYLE_MASK_PATH, "style_threshold_mask.jpg")
+            c_mask = CONTENT_THRESHOLD_MASK_PATH
+            s_mask = STYLE_THRESHOLD_MASK_PATH
             log_text("CONTENT MASK: content_threshold_mask.jpg")
             log_text("STYLE MASK: style_threshold_mask.jpg")
         # User-defined regions -> n_colors = 1
         else:
-            combine_masks(content_masks, target=0)
-            combine_masks(style_masks, target=1)
+            combine_masks(to_npy_str(content_masks), target=0)
+            combine_masks(to_npy_str(style_masks), target=1)
 
             # Style Transfer Parameters
-            c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
-            s_mask = os.path.join(STYLE_MASK_PATH, "combined_mask.jpg")
+            c_mask = CONTENT_COMBINED_MASK_PATH
+            s_mask = STYLE_COMBINED_MASK_PATH
 
             # Log transfer parameters
             log_text("CONTENT MASK: " + str(content_masks))
             log_text("STYLE MASK: " + str(style_masks))
 
-            log_files([c_mask], ["content_combined_mask.jpg"])
-            log_files([s_mask], ["style_combined_mask.jpg"])
+            log_files([c_mask, s_mask])
     
 
     # Colour Style Transfer
@@ -271,23 +268,22 @@ def style_transfer():
         n_colors = int(request.form["n_colors"])
         # Automatic pairing -> n_colors = n_colors
         if len(content_masks)==0 and len(style_masks)==0:
-            c_mask = os.path.join(CONTENT_MASK_PATH, "content_colour_mask.jpg")
-            s_mask = os.path.join(STYLE_MASK_PATH, "style_colour_mask.jpg")
+            c_mask = CONTENT_COLOUR_MASK_PATH
+            s_mask = STYLE_COLOUR_MASK_PATH
             log_text("CONTENT MASK: content_colour_mask.jpg")
             log_text("STYLE MASK: style_colour_mask.jpg")
         # User defined regions -> n_colors = 1
         else:
-            combine_coloured_masks(content_masks, target=0)
-            combine_coloured_masks(style_masks, target=1)
+            combine_masks(to_npy_str(content_masks), target=0)
+            combine_masks(to_npy_str(style_masks), target=1)
 
-            c_mask = os.path.join(CONTENT_MASK_PATH, "combined_mask.jpg")
-            s_mask = os.path.join(STYLE_MASK_PATH, "combined_mask.jpg")
+            c_mask = CONTENT_COMBINED_MASK_PATH
+            s_mask = STYLE_COMBINED_MASK_PATH
 
             log_text("CONTENT MASK: " + str(content_masks))
             log_text("STYLE MASK: " + str(style_masks))
 
-            log_files([c_mask], ["content_combined_mask.jpg"])
-            log_files([s_mask], ["style_combined_mask.jpg"])
+            log_files([c_mask, s_mask])
 
     # Parameter to limit input images width in the style transfer
     hard_width = False

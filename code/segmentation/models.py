@@ -10,6 +10,7 @@ from scipy.cluster.vq import whiten, kmeans
 from scipy.spatial.distance import euclidean
 from itertools import repeat
 import multiprocessing
+import cv2
 
 sys.path.append(os.path.join(APP_ROOT, "segmentation/"))
 
@@ -122,7 +123,7 @@ class SemanticModel():
         
         Arguments:
             - image {nd array}: numpy array containing IDs for individual labels.
-            - origin_imgae {nd array}: numpy array of the original image.
+            - origin_image {nd array}: numpy array of the original image.
         Returns:
             {list}: list of masks which are boolean numpy arrays (1 mask per class label).
         """
@@ -161,15 +162,18 @@ class SemanticModel():
         rgb_segmentation_mask.save(self.SAVE_DIR +  "segmentation_mask.jpg")
         
         # Produce individual masks for each label
-        masks = self.produce_masks(segmentation_mask, np.array(image.resize((2049, 1025))))
+        semantic_masks = self.produce_masks(segmentation_mask, np.array(image.resize((2049, 1025))))
 
-        # Save them as PIL images
-        for i, mask in enumerate(masks):
-            #if np.sum(mask) * 15 > mask.size: # Making sure the region covers at least a 15th of the image area
-            if mask.any(axis=-1).sum() * 15 > mask.size/3:
+        # Save them as numpy arrays and PIL images
+        for i, mask in enumerate(semantic_masks):
+            if mask.any(axis=-1).sum() * 15 > mask.size/3: # Making sure the region covers at least a 15th of the image area
+                # For future processing
+                mask = cv2.resize(mask, dsize=(input_size[0], input_size[1]))
+                np.save(self.SAVE_DIR + "content_mask_" + CITYSCAPES_LABEL_NAMES[i] + ".npy", mask)
+                # For display
                 mask = array_to_pil(mask)
                 mask = mask.resize(input_size)
-                mask.save(self.SAVE_DIR + "mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
+                mask.save(self.SAVE_DIR + "content_mask_" + CITYSCAPES_LABEL_NAMES[i] + ".jpg")
 
         # Superimpose the image and its mask
         superimposed_image = superimpose(image, rgb_segmentation_mask)
@@ -294,8 +298,11 @@ class ThresholdModel():
              # Produce individual masks for each label
             masks = self.produce_masks(output_mask, colors)
 
-            # Save them as PIL images
+            # Save
             for mask, color in zip(masks, colors):
+                # For future processing
+                np.save(self.SAVE_DIR + self.type + "_mask_" + str(color) + ".npy", mask)
+                # For display
                 mask = boolean_to_pil(mask)
                 mask.save(self.SAVE_DIR + self.type + "_mask_" + str(color) + ".jpg")
 
@@ -434,8 +441,11 @@ class ColourModel():
              # Produce individual masks for each label
             masks = self.produce_masks(output_image, self.dom_cols)
 
-            # Save them as PIL images
+            # Save
             for mask, color in zip(masks, self.dom_cols):
+                # For future processing
+                np.save(SAVE_DIR + mask_type + "_mask_" + get_colour_name(color)[1] + ".npy", mask)
+                # For display
                 mask = array_to_pil(mask)
                 mask.save(SAVE_DIR + mask_type + "_mask_" + get_colour_name(color)[1] + ".jpg")
 

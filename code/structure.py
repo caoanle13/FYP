@@ -68,5 +68,64 @@ def produce_zip(folder):
    zipf.close()
 
 
+def is_jpg_mask(filename):
+   """ Checks whether a file is one of the individual mask segments to display.
+   
+   Arguments:
+       filename {str} -- File name.
+   
+   Returns:
+       boolean -- True or False.
+   """
+   if filename.startswith("content_mask_") or filename.startswith("style_mask"):
+      if filename.endswith(".jpg"):
+         return True
+   return False
 
+
+
+def to_npy_str(filenames):
+   """ Given the list of a filenames, it replaces whatever their extension is with '.npy' 
+   
+   Arguments:
+       filename {list} -- List of file names.
+   
+   Returns:
+       str -- Modified file name.
+   """
+   npy = []
+   for filename in filenames:
+      root = filename.split(".")[0]
+      npy.append(root + ".npy")
+   return npy
+
+
+
+def get_masks(target):
+   """ Function to retrieve the list of mask names.
+   
+   Arguments:
+       target {int} -- 0 for content, 1 for style.
+   
+   Returns:
+       list -- List of strings of mask file names.
+   """
+   path = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+   masks = [f for f in os.listdir(path) if is_jpg_mask(f)]
+   return masks
+
+
+
+def get_paths(dir, files):
+   """Function to retrieve a list of paths.
+   
+   Arguments:
+       dir {path} -- Path to the directory from which to create paths.
+       files {list} -- List of filenames.
+   
+   Returns:
+      list -- List of created paths.
+   """
+   paths = [os.path.join(dir, file) for file in files]
+   return paths
 

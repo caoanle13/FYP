@@ -8,6 +8,7 @@ from paths import *
 import os
 from skimage import io
 import webcolors
+import cv2
 
 
 
@@ -70,56 +71,35 @@ def equalize(image):
 
 
 
-
 def combine_masks(filenames, target):
-    """Function to combine different binary masks from the same image into one single binary mask.
-    
-    Arguments:
-        - filenames {list}: list of filenames.
-        - target {int}: 0 for content, 1 for style.
-    """
-   
-    MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
-    
-    h = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
-    w = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
-    
-    mask = np.zeros([h,w,3],dtype=np.uint8)
-
-    for filename in filenames:
-
-        temp = io.imread(os.path.join(MASK_DIR, filename))
-        mask = mask | temp
-    
-    SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
-    io.imsave(SAVE_PATH, mask)
-
-
-def combine_coloured_masks(filenames, target):
     """ Function to combine different single coloured mask into one multiple coloured mask
     
     Arguments:
-        filenames {list} -- List of file names.
+        filenames {list} -- List of numpy file names.
         target {int} -- 0 for content, 1 for style.
     """
 
     MASK_DIR = STYLE_MASK_PATH if target else CONTENT_MASK_PATH
+    SAVE_NAME = ("style" if target else "content") + "_combined_mask.jpg"
+
+    h = np.load(os.path.join(MASK_DIR, filenames[0])).shape[0]
+    w = np.load(os.path.join(MASK_DIR, filenames[0])).shape[1]
     
-    h = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[0]
-    w = io.imread(os.path.join(MASK_DIR, filenames[0])).shape[1]
-    
-    mask = np.zeros([h,w,3],dtype=np.uint8)
+    mask = np.zeros([h,w],dtype=bool)
 
     for filename in filenames:
-
-        temp = io.imread(os.path.join(MASK_DIR, filename))
-        temp = temp != 0
-        mask = mask | temp
+        path = os.path.join(MASK_DIR, filename)
+        temp = np.load(path)
+        # Coloured case
+        if len(temp.shape) == 3:
+            mask += (temp != 0)[:,:,0]
+        # Boolean case
+        else:
+            mask += temp
     
-    mask *= 255
-    
-    SAVE_PATH = os.path.join(MASK_DIR, "combined_mask.jpg")
-    io.imsave(SAVE_PATH, mask)
+    mask = boolean_to_pil(mask)
+    SAVE_PATH = os.path.join(MASK_DIR, SAVE_NAME)
+    mask.save(SAVE_PATH)
 
 
 def closest_colour(rgb):
