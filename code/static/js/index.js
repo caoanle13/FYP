@@ -4,7 +4,7 @@ document.getElementById("n_threshold_label").innerText = "1";
 
 // Event handler for form validation
 let form = document.getElementById("image-form");
-form.addEventListener("submit", function () {
+form.addEventListener("submit", function (event) {
 
 
     let content = this.elements[0];
@@ -17,27 +17,28 @@ form.addEventListener("submit", function () {
     // Check content image field
     if (content.value === "") {
         alert("Please upload a content image.");
-        return false;
+        event.preventDefault();
     }
     // Check style image field
     else if (style.value === "") {
         alert("Please upload a style image as well.");
-        return false;
+        event.preventDefault();
     }
     // Ask for confirmation on full style transfer
     else if (selected === "full") {
-        if (!confirm("Perform style transfer without any guidance mask?")) {
-            return false;
+        let confirmation = confirm("Perform style transfer without any guidance mask?")
+        if (!confirmation) {
+            event.preventDefault();
         } else {
             // Activate loader for full style transfer
             loader.innerText = 'Performing full style transfer...';
-            return true;
         }
     }
     // If everything correct, create and show loader
-    loader.innerText = 'Performing ' + selected + ' segmentation...';
-    $('.ui.basic.modal').modal('show');
-    return true;
+    else {
+        loader.innerText = 'Performing ' + selected + ' segmentation...';
+        $('#loader_modal').modal('show');
+    }
 
 });
 
@@ -90,7 +91,6 @@ let colourSlider = document.getElementById("n_colours");
 let thresholdSlider = document.getElementById("n_threshold");
 colourSlider.addEventListener("change", () => { sliderHandler("colours")});
 thresholdSlider.addEventListener("change", () => { sliderHandler("threshold")});
-
 
 // Event handler to hide base option
 let regionToggle = document.getElementById("region_toggle");
