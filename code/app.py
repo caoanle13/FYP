@@ -49,7 +49,6 @@ def masks():
     log_text("PRESERVE CONTENT PALETTE: " + str(preserve_content_palette))
     log_text("STYLE INFLUENCE:" + s_description)
     log_text("OPTION: " + transfer_option)
-    log_text("USER DEFINED REGION: " + str(user_defined_regions))
     log_files([CONTENT_IMAGE_PATH, STYLE_IMAGE_PATH])
 
     if preserve_content_palette:
@@ -79,6 +78,7 @@ def masks():
         # Get number of thresholds and log it to summary file
         n_threshold = int(request.form["n_threshold"])
         log_text("N THRESHOLD: " + str(n_threshold))
+        log_text("USER DEFINED REGION: " + str(user_defined_regions))
 
         # Paths to segmented content and style images
         masks_path = [
@@ -143,6 +143,7 @@ def masks():
         # Get number of colours and log it to summary file
         n_colours = int(request.form["n_colours"])
         log_text("N COLOUR: " + str(n_colours))
+        log_text("USER DEFINED REGION: " + str(user_defined_regions))
 
         masks_path = [
                 os.path.join(CONTENT_MASK_PATH, "content_colour_mask.jpg"),
@@ -313,6 +314,7 @@ def full_transfer():
     model = TransferModel(1, False, c_mask, s_mask)
     model.apply_transfer()
     log_files([OUTPUT_IMAGE_PATH])
+    log_text("OUTPUT: output.jpg")
     return render_template("output.html", image="output.jpg")
 
 
