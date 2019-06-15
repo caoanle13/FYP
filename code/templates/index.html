@@ -6,10 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="../static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-    <script
-        src="https://code.jquery.com/jquery-3.4.1.min.js"
-        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
     <title>Style Transfer App</title>
 </head>
@@ -17,7 +15,7 @@
 <body>
 
     <!-- Loader -->
-    <div class="ui basic modal">
+    <div class="ui basic modal" id="loader_modal">
         <div class="ui header">
             <div id="segmentation_loader" class="ui huge text loader"></div>
         </div>
@@ -26,37 +24,39 @@
     <!---------- Menu header bar ---------->
 
     <div class="ui brown secondary pointing huge inverted menu" id="navbar">
-            <a href="{{ url_for('index')}}" class="active item">
-                <i class="paint brush icon"></i>
-                <strong>Style Transfer App</strong>
+        <a href="{{ url_for('index')}}" class="active item">
+            <strong>Style Transfer App </strong>
+            <i class="paint brush icon"></i>
+        </a>
+        <a class="item">
+            <!-- Add item if needed -->
+        </a>
+        <div class="right menu">
+            <a class="ui item">
+                <i class="redo alternate icon"></i>
+                Back
             </a>
-            <a class="item">
-                <!-- Add item if needed -->
+            <a href="{{ url_for('index')}}" class="ui item">
+                <i class="home icon"></i>
+                Home
             </a>
-            <div class="right menu">
-                <a class="ui item">
-                    <i class="redo alternate icon"></i>
-                    Back
-                </a>
-                <a href="{{ url_for('index')}}" class="ui item">
-                    <i class="home icon"></i>
-                    Home
-                </a>
-            </div>
+        </div>
     </div><br>
 
 
     <!---------- Main Container ---------->
     <div class="ui center aligned container main">
 
-        <h1><i class="camera retro icon"></i>
-            <strong>Style Transfer App</strong></h1><br>
+        <h1>
+            <strong>Style Transfer App </strong>
+            <i class="paint brush icon"></i>
+        </h1><br>
 
         <!---------- Main Form ---------->
         <div class="ui form">
             <form id="image-form" action="{{ url_for('masks')}}" method="POST" enctype="multipart/form-data">
 
-
+                <!-------- Images Selection ------------->
                 <h4 class="ui horizontal divider header">
                     <i class="image icon"></i>
                     Images Selection
@@ -64,7 +64,7 @@
 
                 <div class="ui segment">
                     <div class="ui two column very relaxed grid">
-                        
+
                         <!---------- Content Image ---------->
                         <div class="column">
                             <h5>Content Image</h5>
@@ -73,14 +73,14 @@
                                 <i class="file image outline icon"></i>
                                 <small>Choose file</small>
                             </label>
-                            <input type="file" id="hidden-content-image"
-                                name="content_image" accept="image/*" style="display:none" required><br><br>
+                            <input type="file" id="hidden-content-image" name="content_image" accept="image/*"
+                                style="display:none" required><br><br>
 
                             <img class="ui centered medium bordered image" id="content-image" src="" height="200"
                                 style="display:none">
 
                         </div>
-                        
+
                         <!---------- Style Image ---------->
                         <div class="column">
                             <h5>Style Image</h5>
@@ -89,8 +89,8 @@
                                 <i class="file image outline icon"></i>
                                 <small>Choose file</small>
                             </label>
-                            <input type="file" id="hidden-style-image"
-                                name="style_image" accept="image/*" style="display:none" required> <br><br>
+                            <input type="file" id="hidden-style-image" name="style_image" accept="image/*"
+                                style="display:none" required> <br><br>
                             <img class="ui centered medium bordered image" id="style-image" src="" height="200"
                                 style="display:none">
 
@@ -103,86 +103,120 @@
                     </div>
                 </div><br>
 
-                <div class="ui checkbox">
-                    <input type="checkbox" name="preserve_content_palette">
-                    <label>Preserve Content Image Colour Palette</label>
-                </div>
-
-
-                <!---------- Second Part of the Form ---------->
+                <!---------- Options Selection ---------->
                 <h4 class="ui horizontal divider header">
-                    <i class="tag icon"></i>
-                    Transfer Type
+                    <i class="edit icon"></i>
+                    Options Selection
                 </h4>
 
-                <div class="ui one column center aligned page grid"><br>
-                    <div class="ui segment">
-                        <h5>Select the type of transfer to execute</h5>
 
-                        <!---------- Transfer Options ---------->
-                        <select class="ui dropdown" name="transfer-option"
-                            id="transfer_select">
-                            <option value="full" selected="selected">Full Style Transfer</option>
-                            <option value="semantic">Semantic Style Transfer</option>
-                            <option value="colour">Colour Style Transfer</option>
-                            <option value="threshold">Threshold Style Transfer</option>
-                        </select>
+                <div class="ui secondary segment">
 
-                        <!---------- User-defined Region Option ---------->
-                        <div class="ui toggle checkbox" id="region_option">
-                            <div class="ui horizontal divider">
-                                <i class="map marker alternate icon"></i>
-                            </div>
+                    <div class="ui center aligned two column very relaxed grid"><br>
+
+                        <!---------- General Options ---------->
+                        <div class="column">
+                            <h4 class="ui header">
+                                <i class="settings icon"></i>
+                                General Options
+                            </h4>
                             <div class="ui segment">
-                                <input type="checkbox" name="region_toggle" id="region_toggle">
-                                <label for="region_toggle">
-                                    Toggle the button if you wish to define allowed regions yourself.
-                                </label>
+
+                                <h5 class="ui header"> Colour Palette
+                                    <i class="eye dropper icon"></i>
+                                </h5>
+                                <div class="ui toggle checkbox">
+                                    <input type="checkbox" name="preserve_content_palette">
+                                    <label>Preserve Content Palette</label>
+                                </div>
+
                             </div>
                         </div>
 
-                        <!---------- Colour Option ---------->                        
-                        <div id="colour_option">
-                            <div class="ui horizontal divider">
-                                <i class="paint brush icon"></i>
-                            </div>
-                            <input class="ui range" type="range" id="n_colours" name="n_colours" min="2" max="5" value="4"><br>
 
-                            <label for="n_colours"> Number of colours:
-                                <span id="n_colours_label"></span>
-                            </label><br><br>
+                        <!---------- Transfer Type  ---------->
+                        <div class="column">
+                            <h4 class="ui header">
+                                <i class="tag icon"></i>
+                                Transfer Type
+                            </h4>
 
-                            <div id="base_option">
-                            <div class="ui horizontal divider">
-                                <i class="expand icon"></i>
-                            </div>
-                                <p>Choose <strong>base</strong> image for the colour segmentation.</p>
-                                <input type="radio" name="base" value="0"> Content Image <br>
-                                <input type="radio" name="base" value="1"> Style Image <br><br>
+                            <div class="ui segment">
+                                <h5>Select the type of transfer to execute</h5>
+
+                                <!---------- Transfer Options ---------->
+                                <select class="ui dropdown" name="transfer-option" id="transfer_select">
+                                    <option value="full" selected="selected">Full Style Transfer</option>
+                                    <option value="semantic">Semantic Style Transfer</option>
+                                    <option value="colour">Colour Style Transfer</option>
+                                    <option value="threshold">Threshold Style Transfer</option>
+                                </select>
+
+                                <!---------- User-defined Region Option ---------->
+                                <div class="ui toggle checkbox" id="region_option">
+                                    <div class="ui horizontal divider">
+                                        <i class="map marker alternate icon"></i>
+                                    </div>
+                                    <div class="ui segment">
+                                        <input type="checkbox" name="region_toggle" id="region_toggle">
+                                        <label for="region_toggle">
+                                            Toggle the button if you wish to define allowed regions yourself.
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!---------- Colour Option ---------->
+                                <div id="colour_option">
+                                    <div class="ui horizontal divider">
+                                        <i class="paint brush icon"></i>
+                                    </div>
+                                    <input class="ui range" type="range" id="n_colours" name="n_colours" min="2" max="5"
+                                        value="4"><br>
+
+                                    <label for="n_colours"> Number of colours:
+                                        <span id="n_colours_label"></span>
+                                    </label><br><br>
+
+                                    <div id="base_option">
+                                        <div class="ui horizontal divider">
+                                            <i class="expand icon"></i>
+                                        </div>
+                                        <p>Choose <strong>base</strong> image for the colour segmentation.</p>
+                                        <input type="radio" name="base" value="0"> Content Image <br>
+                                        <input type="radio" name="base" value="1"> Style Image <br><br>
+                                    </div>
+                                </div>
+
+                                <!---------- Threshold Option ---------->
+                                <div id="threshold_option">
+                                    <div class="ui horizontal divider">
+                                        <i class="cut icon"></i>
+                                    </div>
+                                    <input type="range" id="n_threshold" name="n_threshold" min="1" max="4"
+                                        value="1"><br>
+                                    <label for="n_threshold">Number of threshold(s): <span
+                                            id="n_threshold_label"></span>
+                                    </label><br><br>
+                                </div>
                             </div>
                         </div>
 
-                        <!---------- Threshold Option ---------->
-                        <div id="threshold_option">
-                            <div class="ui horizontal divider">
-                                <i class="cut icon"></i>
-                            </div>
-                            <input type="range" id="n_threshold" name="n_threshold" min="1" max="4" value="1"><br>
-                            <label for="n_threshold">Number of threshold(s): <span id="n_threshold_label"></span>
-                            </label><br><br>
-                        </div>
-
-                        <div class="ui horizontal divider">
-                            <i class="angle double down icon"></i>
-                        </div>
-
-                        <button class="ui brown button" type="submit">Start Processing</button>
                     </div>
                 </div>
-            </form>
-        </div>
-    </div>
 
+                <br><i class="big grey angle double down icon"></i><br><br>
+
+            </form>
+
+            <button class="ui brown animated fade button" type="submit" form="image-form">
+                <div class="visible content">Start Processing</div>
+                <div class="hidden content"><i class="bolt icon"></i></div>
+            </button>
+
+        </div>
+
+
+    </div>
 
 
 
