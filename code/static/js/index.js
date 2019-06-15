@@ -90,3 +90,12 @@ let colourSlider = document.getElementById("n_colours");
 let thresholdSlider = document.getElementById("n_threshold");
 colourSlider.addEventListener("change", () => { sliderHandler("colours")});
 thresholdSlider.addEventListener("change", () => { sliderHandler("threshold")});
+
+
+// Event handler to hide base option
+let regionToggle = document.getElementById("region_toggle");
+regionToggle.addEventListener("change", function ()  {
+    let baseOption = document.getElementById("base_option");
+    let baseDisplay = this.checked ? "none" : "inline"; 
+    baseOption.style.display = baseDisplay;
+});
