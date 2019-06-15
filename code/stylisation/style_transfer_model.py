@@ -12,7 +12,15 @@ from paths import *
 
 class TransferModel():
 
-    def __init__(self, mask_n_colors, hard_width=False, content_mask=None, style_mask=None):
+    style_weight = None
+    content_weight = 1.
+
+    def __init__(
+        self, 
+        mask_n_colors, 
+        hard_width=False, 
+        content_mask=None, 
+        style_mask=None):
 
         self.mask_n_colors = mask_n_colors
         self.hard_width = hard_width
@@ -121,8 +129,8 @@ class TransferModel():
         else:
             tv_loss = 0.
 
-        self.total_loss = args.content_weight * content_loss + \
-                    args.style_weight * style_masked_loss + \
+        self.total_loss = self.content_weight * content_loss + \
+                    self.style_weight * style_masked_loss + \
                     args.tv_weight * tv_loss
 
 

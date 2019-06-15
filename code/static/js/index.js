@@ -9,7 +9,7 @@ form.addEventListener("submit", function (event) {
 
     let content = this.elements[0];
     let style = this.elements[1];
-    let selectMenu = this.elements[3];
+    let selectMenu = this.elements[4];
     let options = selectMenu.options;
     let selected = options[options.selectedIndex].value;
     let loader = document.getElementById("segmentation_loader");
@@ -37,8 +37,8 @@ form.addEventListener("submit", function (event) {
     // If everything correct, create and show loader
     else {
         loader.innerText = 'Performing ' + selected + ' segmentation...';
-        $('#loader_modal').modal('show');
     }
+    $('#loader_modal').modal('show');
 
 });
 

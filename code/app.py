@@ -7,7 +7,7 @@ from segmentation.image_helpers import combine_masks
 from paths import *
 from structure import *
 from stylisation.style_transfer_model import TransferModel
-from constants import numbers
+from constants import numbers, style_param
 from preprocessing.preprocessing import match_histogram
 
 
@@ -34,14 +34,20 @@ def masks():
     style_image = request.files["style_image"]
     style_image.save(STYLE_IMAGE_PATH)
 
+    preserve_content_palette = request.form.get('preserve_content_palette') == "on"
+    s = int(request.form["style_weight"])
+    s_weight = style_param["weights"][s]
+    TransferModel.style_weight = s_weight
+    s_description = style_param["descriptions"][s]
+
     transfer_option = request.form["transfer-option"]
     user_defined_regions = request.form.get('region_toggle') == "on"
-    preserve_content_palette = request.form.get('preserve_content_palette') == "on"
 
     # Log form input to summary directory
     log_text("CONTENT: " + content_image.filename)
     log_text("STYLE: " + style_image.filename) 
     log_text("PRESERVE CONTENT PALETTE: " + str(preserve_content_palette))
+    log_text("STYLE INFLUENCE:" + s_description)
     log_text("OPTION: " + transfer_option)
     log_text("USER DEFINED REGION: " + str(user_defined_regions))
     log_files([CONTENT_IMAGE_PATH, STYLE_IMAGE_PATH])
