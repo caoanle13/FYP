@@ -21,6 +21,7 @@ matplotlib==3.1.0
 mock==3.0.5
 networkx==2.3
 numpy==1.16.3
+opencv-python==4.1.0.25
 Pillow==6.0.0
 protobuf==3.7.1
 pyparsing==2.4.0
@@ -35,4 +36,5 @@ tensorboard==1.13.1
 #tensorflow-gpu==1.13.1
 tensorflow-estimator==1.13.0
 termcolor==1.1.0
+webcolors==1.9.1
 Werkzeug==0.15.4
